@@ -8,7 +8,6 @@ drop table if exists category;
 drop table if exists user;
 
 
-
 CREATE TABLE `user` (
   `uid` int PRIMARY KEY AUTO_INCREMENT,
   `name` varchar(30),
@@ -56,7 +55,8 @@ CREATE TABLE `comment` (
   `commentid` int PRIMARY KEY,
   `pid` int,
   `uid` int,
-  `commenttext` text
+  `commenttext` text,
+  index(pid)
 )
 
 ENGINE = InnoDB;

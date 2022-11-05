@@ -46,8 +46,7 @@ CREATE TABLE `comment` (
   `commentid` int PRIMARY KEY,
   `pid` int,
   `uid` int,
-  `commenttext` text,
-  index(pid)
+  `commenttext` text
 )
 
 ENGINE = InnoDB;

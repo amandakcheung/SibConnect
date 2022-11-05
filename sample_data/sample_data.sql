@@ -1,9 +1,8 @@
 ----Inserting Sample Data------
 use sibconn_db;
 
-drop table if exists seeking_post;
-drop table if exists event_post;
 drop table if exists comment;
+drop table if exists post;
 drop table if exists category;
 drop table if exists user;
 
@@ -19,20 +18,12 @@ CREATE TABLE `user` (
 ENGINE = InnoDB;
 
 
-CREATE TABLE `seeking_post` (
+CREATE TABLE `post` (
   `pid` int PRIMARY KEY,
   `uid` int,
+  `type` ENUM('event_post', 'seeking_post'),
   `category` int,
-  `description` text
-)
-
-ENGINE = InnoDB;
-
-CREATE TABLE `event_post` (
-  `pid` int PRIMARY KEY,
-  `uid` int,
-  `category` int,
-  `location` ENUM ('tower', 'quint', 'new_dorms', 'stone_d', 'branch'),
+  `location` ENUM ('tower', 'quint', 'new_dorms', 'stone_d', 'branch', 'n/a'),
   `date_time` datetime,
   `length` int,
   `recurring` boolean,
@@ -64,14 +55,8 @@ ENGINE = InnoDB;
 
 ALTER TABLE `comment` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
 
-ALTER TABLE `event_post` ADD FOREIGN KEY (`category`) REFERENCES `category` (`cid`);
+ALTER TABLE `comment` ADD FOREIGN KEY (`pid`) REFERENCES `post`(`pid`);
 
-ALTER TABLE `seeking_post` ADD FOREIGN KEY (`category`) REFERENCES `category` (`cid`);
+ALTER TABLE `post` ADD FOREIGN KEY (`category`) REFERENCES `category` (`cid`);
 
-ALTER TABLE `seeking_post` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
-
-ALTER TABLE `event_post` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
-
-ALTER TABLE `seeking_post` ADD FOREIGN KEY (`pid`) REFERENCES `comment` (`pid`);
-
-ALTER TABLE `event_post` ADD FOREIGN KEY (`pid`) REFERENCES `comment` (`pid`);
+ALTER TABLE `post` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);

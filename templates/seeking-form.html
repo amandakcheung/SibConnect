@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+
+{% block main %}
+<p>Form</p>
+<!---This is the form to fill out if something wants to be posted-->
+<form method="post" action="{{url_for('seeking')}}">
+    <p><label>Category:
+            <select name = 'category-list'> 
+            <option value='none'>Choose One</option>
+            {% for category in categories %}
+            <option value="{{movie['tt']}}">
+                {{movie['title']}}
+            </option>
+            {% endfor %}
+        </select></label></p>
+    <p><label> Description: <br>
+            <textarea required name=“description” rows="5" cols="30"></textarea>
+    </label></p>
+    <p><input type= 'submit' name= 'submit' value='Insert Movie'></p>
+</form>
+{% endblock %}

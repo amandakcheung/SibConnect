@@ -5,6 +5,7 @@ def create-profile(user_name, email, pronouns, interests, class_year):
     sql = '''insert into user (uid, name, email, pronouns, interests, class_year) 
     values (%s, %s, %s, %s, %s, %s);'''
     #need to autogenerate a uid
+    #ask scott how to auto incremenent
     curs.execute(sql, [uid, user_name, email, pronouns, interests, class_year])
     conn.commit()
 

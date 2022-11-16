@@ -1,3 +1,28 @@
 <!---Authors: Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino-->
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <!-- for mobile-friendly pages -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino" content="">
+    <title>SibConnect</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+<!-- database is  -->
+<div id="navigation">
+    <ul>
+      <li><a href="/">Home</a>
+      <li><a href="/seeking/">Looking for events</a>
+      <li><a href="/event/">Viewing the existing events</a>
+    </ul>
+</div>
+<!-- is home page and base (/) the same thing-->
+
+{% block main_content %}
+
+{% endblock %}
 
 <p>This is the landing page</p>

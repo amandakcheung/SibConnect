@@ -12,6 +12,7 @@ CREATE TABLE `user` (
   `name` varchar(30),
   `email` varchar(60),
   `pronouns` varchar(20),
+  `interests` varchar(200),
   `class_year` int(4)
 )
 

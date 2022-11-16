@@ -9,7 +9,8 @@ app = Flask(__name__)
 # change comment characters to switch to SQLite
 
 import cs304dbi as dbi
-import sibconn.py
+#import sibconn.py
+import sibconn
 # import cs304dbi_sqlite3 as dbi
 
 import random
@@ -32,6 +33,26 @@ def index():
     @return the template for base.html will be displayed
     '''
     return render_template('base.html',title='Navigation')
+
+@app.route('/login/', methods=["GET", "POST"])
+def log_in():
+    '''
+    Upload the data that users filled out with the log-in form to the database
+    generate a unique userid
+    '''
+    conn = dbi.connect()
+    #gets the blank log in form 
+    if request.method == 'GET':
+        return render_template('log-in.html')
+    elif request.method == "POST":
+        #gets the information from the form
+        info = request.form
+        user_name = info.get('user name')
+        email = info.get('email')
+        pronouns = info.get('pronouns')
+        interests = info.get('interests')
+        class_year = info.get('class year')       
+
 
 @app.route('/seeking/', methods=["GET","POST"])
 def seeking():
@@ -58,7 +79,7 @@ def seeking():
 @app.route('/event/', methods=["GET", "POST"])
 def event():
     '''
-    This processes the form for users who are seeking a specific event.
+    This processes the form for users who are posting a specific event.
     '''
     conn = dbi.connect()
     if request.method == 'GET':

@@ -1,3 +1,13 @@
+def create-profile(user_name, email, pronouns, interests, class_year):
+     '''
+    This method inserts a new user profile into the 
+    '''
+    sql = '''insert into user (uid, name, email, pronouns, interests, class_year) 
+    values (%s, %s, %s, %s, %s, %s);'''
+    #need to autogenerate a uid
+    curs.execute(sql, [uid, user_name, email, pronouns, interests, class_year])
+    conn.commit()
+
 def new_seeking(category, description, conn):
     '''
     This method inserts a seeking post into the post database

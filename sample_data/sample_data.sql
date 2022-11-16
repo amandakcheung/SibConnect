@@ -12,7 +12,6 @@ CREATE TABLE `user` (
   `name` varchar(30),
   `email` varchar(60),
   `pronouns` varchar(20),
-  `interests` varchar(200),
   `class_year` int(4)
 )
 
@@ -60,3 +59,4 @@ ALTER TABLE `comment` ADD FOREIGN KEY (`pid`) REFERENCES `post`(`pid`);
 ALTER TABLE `post` ADD FOREIGN KEY (`category`) REFERENCES `category` (`cid`);
 
 ALTER TABLE `post` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
+

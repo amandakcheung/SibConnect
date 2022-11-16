@@ -3,13 +3,13 @@
 use sibconn_db;
 source sample_data.sql;
 
-insert into user(uid, name, email, pronouns, interests, class_year)
+insert into user(uid, name, email, pronouns, class_year)
 values (1, 'joe', 'joe@wellesley.edu', 'he/him', 2022);
 
-insert into user(uid, name, email, pronouns, interests, class_year)
+insert into user(uid, name, email, pronouns, class_year)
 values (2, 'amy', 'amy@wellesley.edu', 'she/her', 2026);
 
-insert into user(uid, name, email, pronouns, interests, class_year)
+insert into user(uid, name, email, pronouns, class_year)
 values (3, 'matt', 'matt@wellesley.edu', 'they/them', 2023);
 
 insert into category(cid, name)

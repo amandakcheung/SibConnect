@@ -1,9 +1,11 @@
-def create-profile(user_name, email, pronouns, interests, class_year):
-     '''
+
+
+#note from amanda- i changed the name of create-profile to create_profile because python can't have '-' in the name
+def create_profile(user_name, email, pronouns, interests, class_year):
+    '''
     This method inserts a new user profile into the 
     '''
-    sql = '''insert into user (uid, name, email, pronouns, interests, class_year) 
-    values (%s, %s, %s, %s, %s, %s);'''
+    sql = 'insert into user (uid, name, email, pronouns, interests, class_year) values (%s, %s, %s, %s, %s, %s)'
     #need to autogenerate a uid
     curs.execute(sql, [uid, user_name, email, pronouns, interests, class_year])
     conn.commit()

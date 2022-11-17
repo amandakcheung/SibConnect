@@ -12,6 +12,7 @@
 </head>
 <body>
 <!-- database is  -->
+{% block nav %}
 <div id="navigation">
     <ul>
       <li><a href="/">Home</a>
@@ -19,6 +20,9 @@
       <li><a href="/event/">Viewing the existing events</a>
     </ul>
 </div>
+{% endblock %}
+
+
 <!-- is home page and base (/) the same thing-->
 
 {% block main_content %}

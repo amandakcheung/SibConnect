@@ -10,10 +10,10 @@ def create_profile(conn, user_name, email, pronouns, interests, class_year):
     '''
     This method inserts a new user profile into the 
     '''
-    sql = '''insert into user (uid, name, email, pronouns, interests, class_year)
+    sql = '''insert into user (uid, name, email, pronouns, class_year, interests)
     values (%s, %s, %s, %s, %s, %s);'''
     curs = dbi.dict_cursor(conn)
-    curs.execute(sql, [None, user_name, email, pronouns, interests, class_year])
+    curs.execute(sql, [None, user_name, email, pronouns, class_year, interests])
     conn.commit()
 
 def new_seeking(category, description, conn):

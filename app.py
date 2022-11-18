@@ -64,7 +64,7 @@ def log_in():
         class_year = info.get('class year')
         print("Debugging for class_year")
         print(class_year)
-        sibconn.create_profile(user_name, email, pronouns, interests, class_year)
+        sibconn.create_profile(conn, user_name, email, pronouns, class_year, interests)
         return redirect(url_for('home'))
 
 

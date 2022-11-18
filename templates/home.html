@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 {% block main_content %}
 <h1>Navigation Block Page</h1>
-
-<div class="background-one">
+<p>This is the landing page</p>
+<div class="home-page">
+  <div class="background-one">
     <div class="link-container">
-      <a class="link-one" href="/category1/">Three</a>
+      <a class="link-one" href="/">"Category 1"</a>
     </div>
   </div>
   <div class="background-two link-container">
-    <a class="link-two" href="/category2/">Fancy</a>
+    <a class="link-two" href="/">"Category 2"</a>
   </div>
   <div class="background-three link-container">
-    <a class="link-three" href="/category3/">Links</a>
+    <a class="link-three" href="/">"Category 3"</a>
+  </div>
 </div>
-
+{% endblock %}

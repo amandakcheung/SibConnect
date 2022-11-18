@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 {% block main_content %}
-<h1>Secret Santa</h1>
+<h1>Log-in</h1>
 <p class="intro"> <em>Please put your preference in this form below</em></p>
 
 <form id="log-in form"
     method="post"
-    action=" ">
-
+    action="{{url_for('log_in')}}">
 
 <p><label>User Name:
   <input required type="text" name="user name" size="50"></label></p>

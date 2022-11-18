@@ -9,8 +9,8 @@
             <select name = 'category-list'> 
             <option value='none'>Choose One</option>
             {% for category in categories %}
-            <option value="{{movie['tt']}}">
-                {{movie['title']}}
+            <option value="{{category['name']}}">
+                {{category['name']}}
             </option>
             {% endfor %}
         </select></label></p>
@@ -36,7 +36,7 @@
     </label></p>
     <p><label> Capacity: <br>
         <input type="text" required name=capacity rows="5" cols="30"></label></p>
-    <p><input type= 'submit' name= 'submit' value='Insert Movie'></p>
+    <p><input type= 'submit' name= 'submit' value='Post Event'></p>
     <p><label>Skill Level (1-5; 1- beginner 5- expert):
         <select name = 'skill-list'> 
         <option value='none'>Choose One</option>

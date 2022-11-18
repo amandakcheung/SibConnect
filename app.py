@@ -1,5 +1,5 @@
 #Authors: SibConnect- Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino
-#Date: 
+#Date: 11/17/2022
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 from werkzeug.utils import secure_filename
@@ -32,7 +32,15 @@ def index():
     This method is for the main page to display base.html at the url '/'
     @return the template for base.html will be displayed
     '''
-    return render_template('base.html',title='Navigation')
+    return render_template('base.html')
+
+@app.route('/home/')
+def home():
+    '''
+    This method is for the main page to display base.html at the url '/'
+    @return the template for base.html will be displayed
+    '''
+    return render_template('home.html')
 
 @app.route('/login/', methods=["GET", "POST"])
 def log_in():
@@ -47,11 +55,17 @@ def log_in():
     elif request.method == "POST":
         #gets the information from the form
         info = request.form
+        print("Debugging for login")
+        print(info)
         user_name = info.get('user name')
         email = info.get('email')
         pronouns = info.get('pronouns')
         interests = info.get('interests')
-        class_year = info.get('class year')       
+        class_year = info.get('class year')
+        print("Debugging for class_year")
+        print(class_year)
+        sibconn.create_profile(user_name, email, pronouns, interests, class_year)
+        return redirect(url_for('home'))
 
 
 @app.route('/seeking/', methods=["GET","POST"])
@@ -61,7 +75,8 @@ def seeking():
     '''
     conn = dbi.connect()
     if request.method == 'GET':
-        return render_template('seeking-form.html')
+        categories = sibconn.get_categories(conn)
+        return render_template('seeking-form.html', categories = categories)
     elif request.method == "POST":
         #gets the information from the form
         info = request.form
@@ -70,7 +85,7 @@ def seeking():
         #forces the user to resubmit the form if any of the above are missing
         if not category or not desc:
             flash('please fill out all parts of the form')
-            return redirect(url_for('seeking-form'))
+            return redirect(url_for('seeking'))
         #checks if the tt already exists in the database
         else:
             sibconn.new_seeking(category, description, conn)
@@ -83,7 +98,8 @@ def event():
     '''
     conn = dbi.connect()
     if request.method == 'GET':
-        return render_template('event-form.html')
+        categories = sibconn.get_categories(conn)
+        return render_template('event-form.html', categories = categories)
     elif request.method == "POST":
         #gets the information from the form
         info = request.form

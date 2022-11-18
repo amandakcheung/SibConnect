@@ -2,21 +2,21 @@
 
 
 {% block main %}
-<p>Form</p>
+<p>Seeking events to participate in</p>
 <!---This is the form to fill out if something wants to be posted-->
 <form method="post" action="{{url_for('seeking')}}">
     <p><label>Category:
             <select name = 'category-list'> 
             <option value='none'>Choose One</option>
             {% for category in categories %}
-            <option value="{{movie['tt']}}">
-                {{movie['title']}}
+            <option value="{{category['name']}}">
+                {{category['name']}}
             </option>
             {% endfor %}
         </select></label></p>
     <p><label> Description: <br>
             <textarea required name=“description” rows="5" cols="30"></textarea>
     </label></p>
-    <p><input type= 'submit' name= 'submit' value='Insert Movie'></p>
+    <p><input type= 'submit' name= 'submit' value='Seek Event'></p>
 </form>
 {% endblock %}

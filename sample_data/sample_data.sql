@@ -12,7 +12,8 @@ CREATE TABLE `user` (
   `name` varchar(30),
   `email` varchar(60),
   `pronouns` varchar(20),
-  `class_year` int(4)
+  `class_year` int(4),
+  `interests` varchar(100)
 )
 
 ENGINE = InnoDB;

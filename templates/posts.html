@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Posts for {{category}}</h1>
+
+<div id="posts">
+    {% for post in all_posts %}
+    <h3><a value="{{post.descrption}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.description}}</a></h3>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

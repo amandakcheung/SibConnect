@@ -33,7 +33,7 @@ def new_event(category, desc, location, date, length, recurring, capacity, skill
     @param the tt, title, release date of the movie, connector for the database
     '''
     curs = dbi.dict_cursor(conn)
-    sql = '''insert into post(pid, uid, type, category,location, date_time, length, recurring, capacity, skill, description)
+    sql = '''insert into post(pid, uid, type, category, location, date_time, length, recurring, capacity, skill, description)
     values (%s, %s, 'event_post', %s, %s, %s, %s, %s, %s, %s, %s);'''
     curs.execute(sql, [pid, uid, category, location, date, length, recurring, capacity, skill, desc])
     conn.commit()
@@ -42,6 +42,20 @@ def get_categories(conn):
     '''This method selects all the categories 
     '''
     curs = dbi.dict_cursor(conn)
-    curs.execute(
-    '''select * from category''')
+    sql =  '''select * from category'''
+    curs.execute(sql)
     return curs.fetchall()
+
+def get_posts(conn, category):
+    ''' This method gets all of the posts within a category'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where category = (select cid from category where name = %s)'''
+    curs.execute(sql,[category])
+    return curs.fetchall()
+
+def get_specific_post(conn, pid):
+    '''This method gets the details for a specific post'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where pid= %s'''
+    curs.execute(sql,[pid])
+    return curs.fetchone()

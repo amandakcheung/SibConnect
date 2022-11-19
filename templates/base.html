@@ -15,10 +15,10 @@
 {% block nav %}
 <div id="navigation">
     <ul>
-      <li><a href="/home/">Home</a>
-      <li><a href="/login/">Log In</a>
-      <li><a href="/seeking/">Seeking events to participate in</a>
-      <li><a href="/event/">Create/ pub your event </a>
+      <li><a href="{{url_for('home')}}">Home</a>
+      <li><a href="{{url_for('log_in')}}">Log In</a>
+      <li><a href="{{url_for('seeking')}}">Seeking events to participate in</a>
+      <li><a href="{{url_for('event')}}">Create/ pub your event </a>
     </ul>
 </div>
 {% endblock %}

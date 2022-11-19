@@ -1,1 +1,13 @@
-<p>this is the file for the posts</p>
+{% extends "base.html" %}
+{% block main %}
+<h1>{{post.description}}</h1>
+
+<div id="{{post.pid}}">
+    <h3>
+    Location: {{post.location}} <br>
+    When: {{post.date_time}}
+    </h3>
+</div>
+
+
+{% endblock %}

@@ -5,14 +5,14 @@
 <div class="home-page">
   <div class="background-one">
     <div class="link-container">
-      <a class="link-one" href="/">"music"</a>
+      <a class="link-one" value='music' href="{{url_for('category', category='music')}}">"music"</a>
     </div>
   </div>
   <div class="background-two link-container">
-    <a class="link-two" href="/">"art"</a>
+    <a class="link-two" value= 'art' href="{{url_for('category', category='art')}}">"art"</a>
   </div>
   <div class="background-three link-container">
-    <a class="link-three" href="/">"language"</a>
+    <a class="link-three" value= 'language' href="{{url_for('category', category='language')}}">"language"</a>
   </div>
 </div>
 {% endblock %}

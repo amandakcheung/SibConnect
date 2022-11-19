@@ -121,11 +121,6 @@ def event():
             sibconn.new_event(category, desc, location, date, length, recurring, capacity, skill, conn)
             return redirect(url_for('post', pid=pid))
 
-
-@app.route('/post/<pid>')
-def display_post(pid):
-    return render_template('post.html', pid=pid)
-
 @app.route('/select/', methods= ["GET", 'POST'])
 def select():
     '''
@@ -142,7 +137,6 @@ def select():
         #tt = crud.get_movie_tt(title, conn)
         print(tt)
         return redirect(url_for('update', tt=tt))
-
 
 @app.route('/update/<tt>', methods=["GET", "POST"])
 def update(tt):
@@ -199,6 +193,22 @@ def update(tt):
             crud.delete_movie(conn, info)
             flash('Movie (' +info.get('movie-title')+ ") was deleted successfully")
             return redirect(url_for('index'))
+
+@app.route('/<category>/',methods= ['GET','POST'])
+def category(category):
+    ''' This methods displays the category's posts'''
+    conn = dbi.connect()
+    if request.method == "GET":
+        all_posts = sibconn.get_posts(conn,category)
+        return render_template('posts.html', category=category, all_posts=all_posts)
+
+@app.route('/post/<pid>/', methods= ['GET','POST'])
+def display_post(pid):
+    '''This method displays the post details'''
+    conn = dbi.connect()
+    if request.method == "GET":
+        full_post = sibconn.get_specific_post(conn, pid)
+        return render_template('post.html', post= full_post)
 
 @app.route('/search/')
 def search():

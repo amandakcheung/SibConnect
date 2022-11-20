@@ -6,7 +6,7 @@ import cs304dbi as dbi
 # ==========================================================
 # The functions that do most of the work.
 
-def create_profile(conn, user_name, email, pronouns, interests, class_year):
+def create_profile(conn, user_name, email, pronouns, class_year, interests):
     '''
     This method inserts a new user profile into the 
     '''

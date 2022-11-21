@@ -24,7 +24,8 @@ def new_seeking(category, description, conn):
     curs = dbi.dict_cursor(conn)
     sql = '''insert into post(pid, uid, type, category,description) 
     values (%s, %s, 'seeking_post', %s, %s);'''
-    curs.execute(sql, [pid, uid, category, description])
+    #place holder uid
+    curs.execute(sql, [None, 1, category, description])
     conn.commit()
 
 def new_event(category, desc, location, date, length, recurring, capacity, skill, conn):
@@ -33,9 +34,10 @@ def new_event(category, desc, location, date, length, recurring, capacity, skill
     @param the tt, title, release date of the movie, connector for the database
     '''
     curs = dbi.dict_cursor(conn)
+    #place holder uid
     sql = '''insert into post(pid, uid, type, category, location, date_time, length, recurring, capacity, skill, description)
     values (%s, %s, 'event_post', %s, %s, %s, %s, %s, %s, %s, %s);'''
-    curs.execute(sql, [pid, uid, category, location, date, length, recurring, capacity, skill, desc])
+    curs.execute(sql, [None, 1, category, location, date, length, recurring, capacity, skill, desc])
     conn.commit()
 
 def get_categories(conn):
@@ -59,3 +61,10 @@ def get_specific_post(conn, pid):
     sql = '''select * from post where pid= %s'''
     curs.execute(sql,[pid])
     return curs.fetchone()
+
+# testing
+
+if __name__ == '__main__':
+    dbi.cache_cnf()   # defaults to ~/.my.cnf
+    dbi.use('sibconn_db')
+    conn = dbi.connect()

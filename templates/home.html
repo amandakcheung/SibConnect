@@ -1,18 +1,14 @@
 {% extends "base.html" %}
 {% block main %}
-<h1>Navigation Block Page</h1>
-<p>This is the landing page</p>
-<div class="home-page">
-  <div class="background-one">
-    <div class="link-container">
-      <a class="link-one" value='music' href="{{url_for('category', category='music')}}">"music"</a>
-    </div>
-  </div>
-  <div class="background-two link-container">
-    <a class="link-two" value= 'art' href="{{url_for('category', category='art')}}">"art"</a>
-  </div>
-  <div class="background-three link-container">
-    <a class="link-three" value= 'language' href="{{url_for('category', category='language')}}">"language"</a>
-  </div>
-</div>
+
+<body>
+  <ul class="navMenu">
+    <li><a href="{{url_for('category', category='Music')}}">"Music"</a>
+    <li><a href="{{url_for('category', category='Arts & Crafts')}}">"Arts & Crafts"</a>
+    <li><a href="{{url_for('category', category='Language & Culture')}}">"Language & Culture"</a>
+    <li><a href="{{url_for('category', category='Movies & Shows')}}">"Movies & Shows"</a>
+    <li><a href="{{url_for('category', category='Sports & Outdoor')}}">"Sports & Outdoor"</a>
+      <li><a href="{{url_for('category', category='Other')}}">"Other"</a>
+  </ul>
+</body>
 {% endblock %}

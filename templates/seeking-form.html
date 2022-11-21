@@ -3,6 +3,16 @@
 
 {% block main %}
 <p>Seeking events to participate in</p>
+
+
+<!---javascript that display a text box if user select other-->
+<script type="text/javascript">
+    function showfield(name){
+      if(name=='Other')document.getElementById('optional_textbox').innerHTML='Other: <input type="text" name="other" />';
+      else document.getElementById('optional_textbox').innerHTML='';
+    }
+</script>
+
 <!---This is the form to fill out if something wants to be posted-->
 <form method="post" action="{{url_for('seeking')}}">
     <p><label>Category:
@@ -13,7 +23,10 @@
                 {{category['name']}}
             </option>
             {% endfor %}
-        </select></label></p>
+        </select>
+        <div id="optional_textbox"></div>
+    </label></p>
+
     <p><label> Description: <br>
             <textarea required name=“description” rows="5" cols="30"></textarea>
     </label></p>

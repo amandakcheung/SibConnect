@@ -20,7 +20,7 @@ ENGINE = InnoDB;
 
 
 CREATE TABLE `post` (
-  `pid` int PRIMARY KEY,
+  `pid` int PRIMARY KEY AUTO_INCREMENT,
   `uid` int,
   `type` ENUM('event_post', 'seeking_post'),
   `category` int,
@@ -37,14 +37,14 @@ ENGINE = InnoDB;
 
 
 CREATE TABLE `category` (
-  `cid` int PRIMARY KEY,
+  `cid` int PRIMARY KEY AUTO_INCREMENT,
   `name` varchar(30)
 )
 
 ENGINE = InnoDB;
 
 CREATE TABLE `comment` (
-  `commentid` int PRIMARY KEY,
+  `commentid` int PRIMARY KEY AUTO_INCREMENT,
   `pid` int,
   `uid` int,
   `commenttext` text

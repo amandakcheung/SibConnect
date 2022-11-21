@@ -62,8 +62,6 @@ def log_in():
         pronouns = info.get('pronouns')
         interests = info.get('interests')
         class_year = info.get('class year')
-        print("Debugging for class_year")
-        print(class_year)
         sibconn.create_profile(conn, user_name, email, pronouns, class_year, interests)
         return redirect(url_for('home'))
 
@@ -86,10 +84,11 @@ def seeking():
         if not category or not desc:
             flash('please fill out all parts of the form')
             return redirect(url_for('seeking'))
-        #checks if the tt already exists in the database
+        #returns to the detailed post that's posted
         else:
             sibconn.new_seeking(category, description, conn)
-            return redirect(url_for('post', pid=pid))
+            return redirect(url_for('category', category = category))
+            # return redirect(url_for('display_post', pid=pid))
 
 @app.route('/event/', methods=["GET", "POST"])
 def event():
@@ -116,10 +115,36 @@ def event():
             not date or not length or not reoccuring or not capacity or not skill):
             flash('please fill out all parts of the form')
             return redirect(url_for('event'))
-        #checks if the tt already exists in the database
+        #create a new event and redirect url to the event page 
         else:
+            print("succeessfully recorded the entry")
             sibconn.new_event(category, desc, location, date, length, recurring, capacity, skill, conn)
-            return redirect(url_for('post', pid=pid))
+            curs.execute('select last_insert_id()')
+            row = curs.fetchone()
+            print("debugging for last insert id - row")
+            print(row)
+            pid = row[0]
+            print("debugging pid")
+            print(pid)
+            return redirect(url_for('display_post', pid=pid))
+
+@app.route('/<category>/',methods= ['GET','POST'])
+def category(category):
+    ''' This methods displays the category's posts'''
+    conn = dbi.connect()
+    if request.method == "GET":
+        all_posts = sibconn.get_posts(conn,category)
+        return render_template('posts.html', category=category, all_posts=all_posts)
+
+@app.route('/post/<pid>/', methods= ['GET','POST'])
+def display_post(pid):
+    '''This method displays the post details'''
+    conn = dbi.connect()
+    if request.method == "GET":
+        full_post = sibconn.get_specific_post(conn, pid)
+        return render_template('post.html', post= full_post)
+
+#end of 11/20
 
 @app.route('/select/', methods= ["GET", 'POST'])
 def select():
@@ -193,22 +218,6 @@ def update(tt):
             crud.delete_movie(conn, info)
             flash('Movie (' +info.get('movie-title')+ ") was deleted successfully")
             return redirect(url_for('index'))
-
-@app.route('/<category>/',methods= ['GET','POST'])
-def category(category):
-    ''' This methods displays the category's posts'''
-    conn = dbi.connect()
-    if request.method == "GET":
-        all_posts = sibconn.get_posts(conn,category)
-        return render_template('posts.html', category=category, all_posts=all_posts)
-
-@app.route('/post/<pid>/', methods= ['GET','POST'])
-def display_post(pid):
-    '''This method displays the post details'''
-    conn = dbi.connect()
-    if request.method == "GET":
-        full_post = sibconn.get_specific_post(conn, pid)
-        return render_template('post.html', post= full_post)
 
 @app.route('/search/')
 def search():

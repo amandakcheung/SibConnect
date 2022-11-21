@@ -102,6 +102,7 @@ def event():
     elif request.method == "POST":
         #gets the information from the form
         info = request.form
+        print(info)
         category = info.get('category-list')
         desc = info.get('description')
         location = info.get('location')   
@@ -111,21 +112,18 @@ def event():
         capacity= info.get('capacity')
         skill= info.get('skill-list')
         #forces the user to resubmit the form if any of the above are missing
-        if not category or not desc or not location or (
-            not date or not length or not reoccuring or not capacity or not skill):
+        if not category or not desc or not location:
+            #not date or not length or not reccuring or not capacity or not skill):
             flash('please fill out all parts of the form')
             return redirect(url_for('event'))
         #create a new event and redirect url to the event page 
         else:
             print("succeessfully recorded the entry")
-            sibconn.new_event(category, desc, location, date, length, recurring, capacity, skill, conn)
-            curs.execute('select last_insert_id()')
-            row = curs.fetchone()
-            print("debugging for last insert id - row")
-            print(row)
-            pid = row[0]
-            print("debugging pid")
-            print(pid)
+            cid = sibconn.get_category(conn,category)
+            cid = cid.get('cid')
+            sibconn.new_event(cid, desc, location, date, length, recurring, capacity, skill, conn)
+            pid = sibconn.get_last_pid(conn)
+            pid = pid.get('max(pid)')
             return redirect(url_for('display_post', pid=pid))
 
 @app.route('/<category>/',methods= ['GET','POST'])

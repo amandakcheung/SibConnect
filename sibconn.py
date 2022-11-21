@@ -62,6 +62,20 @@ def get_specific_post(conn, pid):
     curs.execute(sql,[pid])
     return curs.fetchone()
 
+def get_category(conn, name):
+    ''' This method gets the cid for a given name of category'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select cid from category where name= %s'''
+    curs.execute(sql,[name])
+    return curs.fetchone()
+
+def get_last_pid(conn):
+    ''' This method gets the cid for a given name of category'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select max(pid) from post'''
+    curs.execute(sql)
+    return curs.fetchone()
+
 # testing
 
 if __name__ == '__main__':

@@ -8,13 +8,18 @@
 <!---javascript that display a text box if user select other-->
 <script type="text/javascript">
     function showfield(name){
-      if(name=='Other')document.getElementById('optional_textbox').innerHTML='Other: <input type="text" name="other" />';
+      if(name=='Other')document.getElementById(
+        'optional_textbox'
+        ).innerHTML='Other: <input type="text" name="other" />';
       else document.getElementById('optional_textbox').innerHTML='';
     }
 </script>
 
 <!---This is the form to fill out if something wants to be posted-->
 <form method="post" action="{{url_for('seeking')}}">
+    <p><label> Title:
+    <input type="text" required name='title' rows="5" cols="30">
+    </label></p>
     <p><label>Category:
             <select name = 'category-list'> 
             <option value='none'>Choose One</option>
@@ -26,9 +31,8 @@
         </select>
         <div id="optional_textbox"></div>
     </label></p>
-
     <p><label> Description: <br>
-            <textarea required name=“description” rows="5" cols="30"></textarea>
+            <textarea required name='description' rows="5" cols="30"></textarea>
     </label></p>
     <p><input type= 'submit' name= 'submit' value='Seek Event'></p>
 </form>

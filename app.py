@@ -62,7 +62,8 @@ def log_in():
         pronouns = info.get('pronouns')
         interests = info.get('interests')
         class_year = info.get('class year')
-        sibconn.create_profile(conn, user_name, email, pronouns, class_year, interests)
+        sibconn.create_profile(
+            conn, user_name, email, pronouns, class_year, interests)
         return redirect(url_for('home'))
 
 
@@ -78,17 +79,26 @@ def seeking():
     elif request.method == "POST":
         #gets the information from the form
         info = request.form
+        title= info.get('title')
         category = info.get('category-list')
-        desc = info.get('description')        
+        desc = info.get('description')
+        print('info')
+        print(info)
         #forces the user to resubmit the form if any of the above are missing
-        if not category or not desc:
+        if not category or not desc or not title:
+            print(category)
+            print(desc)
             flash('please fill out all parts of the form')
             return redirect(url_for('seeking'))
         #returns to the detailed post that's posted
         else:
-            sibconn.new_seeking(category, description, conn)
-            return redirect(url_for('category', category = category))
-            # return redirect(url_for('display_post', pid=pid))
+            category = sibconn.get_category(conn,category)
+            cid = category.get('cid')
+            sibconn.new_seeking(cid, desc, title, conn)
+            pid = sibconn.get_last_pid(conn)
+            pid = pid.get('max(pid)')
+            #return redirect(url_for('category', category= category))
+            return redirect(url_for('display_post', pid=pid))
 
 @app.route('/event/', methods=["GET", "POST"])
 def event():
@@ -98,11 +108,12 @@ def event():
     conn = dbi.connect()
     if request.method == 'GET':
         categories = sibconn.get_categories(conn)
-        return render_template('event-form.html', categories = categories)
+        return render_template('event-form.html', categories= categories)
     elif request.method == "POST":
         #gets the information from the form
         info = request.form
         print(info)
+        title = info.get('title')
         category = info.get('category-list')
         desc = info.get('description')
         location = info.get('location')   
@@ -110,10 +121,11 @@ def event():
         length= info.get('length')
         recurring= info.get('recurring')
         capacity= info.get('capacity')
-        skill= info.get('skill-list')
+        skill= info.get('skill')
         #forces the user to resubmit the form if any of the above are missing
-        if not category or not desc or not location:
-            #not date or not length or not reccuring or not capacity or not skill):
+        if not category or not desc or not location or (
+            not date or not length or not recurring or not capacity or (
+                not skill or not title)):
             flash('please fill out all parts of the form')
             return redirect(url_for('event'))
         #create a new event and redirect url to the event page 
@@ -121,7 +133,9 @@ def event():
             print("succeessfully recorded the entry")
             cid = sibconn.get_category(conn,category)
             cid = cid.get('cid')
-            sibconn.new_event(cid, desc, location, date, length, recurring, capacity, skill, conn)
+            sibconn.new_event(
+                cid, title, desc, location, date, length,
+                recurring, capacity, skill, conn)
             pid = sibconn.get_last_pid(conn)
             pid = pid.get('max(pid)')
             return redirect(url_for('display_post', pid=pid))
@@ -132,7 +146,8 @@ def category(category):
     conn = dbi.connect()
     if request.method == "GET":
         all_posts = sibconn.get_posts(conn,category)
-        return render_template('posts.html', category=category, all_posts=all_posts)
+        return render_template('posts.html', category=category, 
+        all_posts=all_posts)
 
 @app.route('/post/<pid>/', methods= ['GET','POST'])
 def display_post(pid):
@@ -140,90 +155,18 @@ def display_post(pid):
     conn = dbi.connect()
     if request.method == "GET":
         full_post = sibconn.get_specific_post(conn, pid)
-        return render_template('post.html', post= full_post)
+        cid = full_post.get('category')
+        category = sibconn.get_category_name(conn,cid)
+        print('full post')
+        print(full_post)
+        if full_post.get('type') == 'event_post':
+            return render_template('display_event_post.html', 
+            post= full_post, category= category)
+        else:
+            return render_template('display_seeking_post.html', 
+            post= full_post, category= category)
 
 #end of 11/20
-
-@app.route('/select/', methods= ["GET", 'POST'])
-def select():
-    '''
-    This method processes the select form to allow users to choose
-    what movie they want to look at given a dropdown.
-    @return the update page for the tt selected
-    '''
-    conn = dbi.connect()
-    if request.method == "GET":
-        movie_list = crud.get_incomplete_movies(conn)
-        return render_template('select.html', incomplete_movie=movie_list)
-    if request.method == "POST":
-        tt = request.form.get('menu-tt')
-        #tt = crud.get_movie_tt(title, conn)
-        print(tt)
-        return redirect(url_for('update', tt=tt))
-
-@app.route('/update/<tt>', methods=["GET", "POST"])
-def update(tt):
-    '''
-    This method displays the update page for any given tt. 
-    It will either update the page, or display it depending on
-    the request. 
-    @param the tt of the movie to be displayed
-    @return the update.html template
-    '''
-    conn = dbi.connect()
-    movie_dict = crud.find_movie(conn, tt)
-    print('update restart- moviett')
-    print(tt)
-    print('update restart- movie_dict')
-    print(movie_dict)
-    if request.method == "GET":
-        #movie_dict = crud.find_movie(conn, tt)
-        #checks to put the director onto the form if exists
-        if not crud.get_director(conn, movie_dict.get('director')):
-            dname = 'None Specified'
-        else:
-            dname = crud.get_director(conn, movie_dict.get('director'))['name']
-        return render_template('update.html',movie= movie_dict,director_name=dname)
-    if request.method == "POST":
-        info = request.form
-        #if the submission was with the update button
-        if info.get('submit') == 'update':
-            #checks if the tt already exists (and is not the same as current one)
-            matching_tt = (info.get('movie-tt') == tt)
-            #checks if the tt's are the same
-            if matching_tt:
-                crud.update_movie(conn, info, tt)
-                flash(info.get('movie-title') + ' was updated sucessfully')
-                movie_dict= crud.find_movie(conn, info.get('movie-tt'))
-                if not crud.get_director(conn, movie_dict.get('director')):
-                    dname = 'None Specified'
-                else:
-                    dname = crud.get_director(conn, movie_dict.get('director'))['name']
-                return render_template('update.html', movie=movie_dict, director_name=dname)
-            if crud.check_if_not_exists(info.get('movie-tt'), conn):
-                print('info for not exiting')
-                print(info)
-                crud.update_movie(conn, info, tt)
-                flash(info.get('movie-title') + ' was updated sucessfully')
-                #return render_template('update.html', movie=)
-                return redirect(url_for('update', tt= info.get('movie-tt')))
-            else:
-                flash('movie with that id already exists. can not update')
-                movie_dict = crud.find_movie(conn, tt)
-                return render_template('update.html', movie=movie_dict, director_name=dname)
-        #if the submission was for delete
-        elif info.get('submit') == 'delete':
-            crud.delete_movie(conn, info)
-            flash('Movie (' +info.get('movie-title')+ ") was deleted successfully")
-            return redirect(url_for('index'))
-
-@app.route('/search/')
-def search():
-    '''
-    This method displays the search.html file
-    @return the template for search.html is displayed
-    '''
-    return render_template('search.html')
 
 
 #use to make the database run

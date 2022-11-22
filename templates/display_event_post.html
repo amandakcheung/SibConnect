@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>EVENT: {{post.title}}</h1>
+
+<div id="{{post.pid}}">
+    <h3>
+    Description: {{post.description}}
+    Location: {{post.location}} <br>
+    Category: {{category.name}} <br>
+    When: {{post.date_time}} <br>
+    Length: {{post.length}} minutes<br>
+    Recurring? {{post.recurring}} <br>
+    Capacity Limit: {{post.capacity}} <br>
+    Skill Level: {{post.skill}}
+    </h3>
+</div>
+
+
+{% endblock %}

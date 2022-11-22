@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>LOOKING FOR: {{post.title}}</h1>
+
+<div id="{{post.pid}}">
+    <h3>
+    Description: {{post.description}} <br>
+    Category: {{category.name}} <br>
+    </h3>
+</div>
+
+
+{% endblock %}

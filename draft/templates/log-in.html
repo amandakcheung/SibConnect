@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Log-in</h1>
+<p class="intro"> <em>Please put your preference in this form below</em></p>
+
+<form id="log-in form"
+    method="post"
+    action="{{url_for('log_in')}}">
+
+<p><label>User Name:
+  <input required type="text" name="user name" size="50"></label></p>
+
+<p><label>Email:
+  <textarea required name="email" rows="1" cols="50"></textarea>
+</label></p>
+
+<p><label>Pronouns:
+  <textarea required name="pronouns" rows="1" cols="50"></textarea>
+</label></p>
+
+<p><label>Interests:
+  <textarea required name="interests" rows="1" cols="50"></textarea>
+</label></p>
+
+<p><label>Class Year:
+    <select required name="class year">
+        <option value="">choose</option>
+        <option>2026</option>
+        <option>2025</option>
+        <option>2024</option>
+        <option>2023</option>
+        <option>Alum</option>
+    </select>
+</label></p>
+
+<p><input type="submit" value="Create Profile">
+
+</form>
+{% endblock %}

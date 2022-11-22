@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+
+{% block main %}
+<p>Create/ Pub Your Event!</p>
+<!---This is the form to fill out if something wants to be posted-->
+<form method="post" action="{{url_for('event')}}">
+    <p><label> Title:
+        <input type="text" required name='title' rows="5" cols="50">
+    </label></p>
+    <p><label>Category:
+            <select name = 'category-list'> 
+            <option value='none'>Choose One</option>
+            {% for category in categories %}
+            <option value="{{category['name']}}">
+                {{category['name']}}
+            </option>
+            {% endfor %}
+        </select></label></p>
+    <p><label> Description(add the specific location in the description): <br>
+        <textarea required name="description" rows="5" cols="30"></textarea>
+    </label></p>
+    <p><label> Location: <br>
+        <input type="radio" id="quint" name="location" value="Quint/ West Side"> Quint/ West Side <br>
+        <input type="radio" id="tower" name="location" value="Tower Court"> Tower Court <br>
+        <input type="radio" id="new_dorms" name="location" value="New Dorms"> New Dorms <br>
+        <input type="radio" id="stoned" name="location" value="Stone Davis"> Stone Davis <br>
+        <input type="radio" id="branch" name="location" value="Branch (Lake House etc)"> Branch (Lake House etc)<br>
+        <input type="radio" id="none" name="location" value="n/a"> n/a
+    </label></p>
+    <p><label> Date/Time: <br>
+        <input required type='datetime-local' name='date_time' rows="5" cols="30">
+    </label></p>
+    <p><label> Length (in minutes): <br>
+        <input type="text" required name='length' rows="5" cols="30">
+    </label></p>
+    <p><label> Recurring: <br>
+        <input type="radio" id="yes" name="recurring" value="Yes"> Yes
+        <input type="radio" id="no" name="recurring" value="No"> No
+    </label></p>
+    <p><label> Capacity: <br>
+        <input type="text" required name=capacity rows="5" cols="30"></label></p>
+    <p><label>Skill Level (1- beginner 5- expert):
+        <select name = 'skill'> 
+        <option value='none'>Choose One</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+    </select></label></p>
+    <p><input type= 'submit' name= 'submit' value='Post Event'></p>
+</form>
+{% endblock %}

@@ -3,12 +3,12 @@
 
 <body>
   <ul class="navMenu">
-    <li><a href="{{url_for('category', category='Music')}}">"Music"</a>
-    <li><a href="{{url_for('category', category='Arts & Crafts')}}">"Arts & Crafts"</a>
-    <li><a href="{{url_for('category', category='Language & Culture')}}">"Language & Culture"</a>
-    <li><a href="{{url_for('category', category='Movies & Shows')}}">"Movies & Shows"</a>
-    <li><a href="{{url_for('category', category='Sports & Outdoor')}}">"Sports & Outdoor"</a>
-      <li><a href="{{url_for('category', category='Other')}}">"Other"</a>
+    <li><a href="{{url_for('category', category='Music', sort='mostrecent')}}">"Music"</a>
+    <li><a href="{{url_for('category', category='Arts & Crafts', sort='mostrecent')}}">"Arts & Crafts"</a>
+    <li><a href="{{url_for('category', category='Language & Culture', sort='mostrecent')}}">"Language & Culture"</a>
+    <li><a href="{{url_for('category', category='Movies & Shows', sort='mostrecent')}}">"Movies & Shows"</a>
+    <li><a href="{{url_for('category', category='Sports & Outdoor', sort='mostrecent')}}">"Sports & Outdoor"</a>
+    <li><a href="{{url_for('category', category='Other', sort='mostrecent')}}">"Other"</a>
   </ul>
 </body>
 {% endblock %}

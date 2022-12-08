@@ -7,6 +7,20 @@
     <h3><a value="{{post.descrption}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.description}}</a></h3>
     {% endfor %}
 </div>
-
+<form action="" method="POST">
+<label> Sort by</label>
+<select onChange="window.location.href=this.value"> 
+<option value="value" selected>Sort By</option>
+<option value="{{url_for('category', category=category, sort='leastrecent')}}">Least to Most Recent</option>
+<option value="{{url_for('category', category=category, sort='mostrecent')}}" >Most to Least Recent</option>
+<option value="{{url_for('category', category=category, sort='lowskill')}}" >Low to High Skill Level</option>
+<option value="{{url_for('category', category=category, sort='highskill')}}">High to Low Skill Level</option>
+<option value="{{url_for('category', category=category, sort='recurring')}}">Recurring</option>
+<option value="{{url_for('category', category=category, sort='soon')}}">Coming Up Soon</option>
+</select>
+</form>
+</div>
 
 {% endblock %}
+
+

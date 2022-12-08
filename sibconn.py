@@ -88,6 +88,16 @@ def get_last_pid(conn):
     curs.execute(sql)
     return curs.fetchone()
 
+def sort_recent_post(conn, category, ptype, sorto):
+    '''This method sorts event posts from earliest to 
+    latest or latest to earliest'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where category = (select cid from category where name = %s) and 
+    type = %s
+    order by %s'''
+    curs.execute(sql, [category, ptype, sorto])
+    return curs.fetchall()
+
 # testing
 
 if __name__ == '__main__':

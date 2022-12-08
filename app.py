@@ -97,7 +97,6 @@ def seeking():
             sibconn.new_seeking(cid, desc, title, conn)
             pid = sibconn.get_last_pid(conn)
             pid = pid.get('max(pid)')
-            #return redirect(url_for('category', category= category))
             return redirect(url_for('display_post', pid=pid))
 
 @app.route('/event/', methods=["GET", "POST"])
@@ -140,12 +139,23 @@ def event():
             pid = pid.get('max(pid)')
             return redirect(url_for('display_post', pid=pid))
 
-@app.route('/<category>/',methods= ['GET','POST'])
-def category(category):
+@app.route('/<category>/<sort>',methods= ['GET','POST'])
+def category(category, sort):
     ''' This methods displays the category's posts'''
     conn = dbi.connect()
     if request.method == "GET":
-        all_posts = sibconn.get_posts(conn,category)
+        if sort == 'leastrecent':
+            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'pid, asc')
+        elif sort == "mostrecent":
+            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'pid, desc')
+        elif sort == "lowskill":
+            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'skill, asc')
+        elif sort == "highskill":
+            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'skill, desc')
+        elif sort == "recurring": #recurring is being weird
+            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'recurring, asc')
+        else:
+            all_posts = sibconn.get_posts(conn,category)
         return render_template('posts.html', category=category, 
         all_posts=all_posts)
 

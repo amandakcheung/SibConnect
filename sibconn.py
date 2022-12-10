@@ -6,15 +6,32 @@ import cs304dbi as dbi
 # ==========================================================
 # The functions that do most of the work.
 
-def create_profile(conn, user_name, email, pronouns, class_year, interests):
+
+def create_profile(conn, email, first, last, hashed, pronouns, class_year, interests):
     '''
-    This method inserts a new user profile into the 
+    This method creates a user profile and stores the password for a new user
     '''
-    sql = '''insert into user (uid, name, email, pronouns, class_year, interests)
-    values (%s, %s, %s, %s, %s, %s);'''
     curs = dbi.dict_cursor(conn)
-    curs.execute(sql, [None, user_name, email, pronouns, class_year, interests])
-    conn.commit()
+    try: 
+        sql = '''insert into user (uid, email, first_name, last_name, hashed, pronouns, class_year, interests)
+                values (%s, %s, %s, %s, %s, %s, %s, %s);'''
+        curs.execute(sql, [None, email, first, last, hashed, pronouns, class_year, interests])
+        conn.commit()
+    except Exception as err:
+        print('something went wrong', repr(err))
+
+def login(conn, email):
+    '''
+    This methods checks user email and password and log them in
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT uid,hashed,first_name
+                    FROM user
+                    WHERE email = %s''',
+                 [email])
+    return curs.fetchone()
+
+
 
 def new_seeking(category, description, title, conn):
     '''

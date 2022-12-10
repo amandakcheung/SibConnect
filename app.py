@@ -14,6 +14,7 @@ import sibconn
 # import cs304dbi_sqlite3 as dbi
 
 import random
+import bcrypt
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -42,29 +43,89 @@ def home():
     '''
     return render_template('home.html')
 
-@app.route('/login/', methods=["GET", "POST"])
-def log_in():
+@app.route('/create_profile/', methods=["GET", "POST"])
+def create_profile():
     '''
     Upload the data that users filled out with the log-in form to the database
     generate a unique userid
     '''
     conn = dbi.connect()
-    #gets the blank log in form 
+    #gets the blank create profile form 
     if request.method == 'GET':
-        return render_template('log-in.html')
+        return render_template('create-profile.html')
     elif request.method == "POST":
-        #gets the information from the form
+        #gets the user input from the form
         info = request.form
-        print("Debugging for login")
-        print(info)
-        user_name = info.get('user name')
         email = info.get('email')
+        first = info.get('first name')
+        last = info.get('last name')
+        passwd = info.get('password')
+        #create hashing for password
+        hashed = bcrypt.hashpw(passwd.encode('utf-8'),
+                           bcrypt.gensalt())
+        stored = hashed.decode('utf-8')
+        print('debugging for hash')
+        print(passwd, type(passwd), hashed, stored)
         pronouns = info.get('pronouns')
         interests = info.get('interests')
         class_year = info.get('class year')
-        sibconn.create_profile(
-            conn, user_name, email, pronouns, class_year, interests)
+        sibconn.create_profile(conn, email, first, last, hashed, pronouns, class_year, interests)
         return redirect(url_for('home'))
+
+
+@app.route('/login/', methods=["GET", "POST"])
+def login():
+    conn = dbi.connect()
+    #gets the blank create profile form 
+    if request.method == 'GET':
+        return render_template('log-in.html')
+    #gets the information from the form
+    elif request.method == "POST":
+        email = request.form.get('email')
+        passwd = request.form.get('password')
+        row = sibconn.login(conn, email)
+        print('debugging for login-row')
+        print(row)
+        if row is None:
+            #redirect user to create profile
+            flash("You don't have a profile yet, create a profile.")
+            return redirect( url_for('create_profile'))
+        stored = row['hashed']
+        first = row['first_name']
+        print('database has stored: {} {}'.format(stored,type(stored)))
+        print('form supplied passwd: {} {}'.format(passwd,type(passwd)))
+        hashed2 = bcrypt.hashpw(passwd.encode('utf-8'),
+                                stored.encode('utf-8'))
+        hashed2_str = hashed2.decode('utf-8')
+        print('rehash is: {} {}'.format(hashed2_str,type(hashed2_str)))
+        if hashed2_str == stored:
+            print('they match!')
+            flash('Welcome '+ first + '!')
+            session['email'] = email
+            session['first_name'] = first
+            session['uid'] = row['uid']
+            session['logged_in'] = True
+            session['visits'] = 1
+            return redirect( url_for('home') )
+        else: 
+            flash('Password is incorrect. Try again.')
+            return redirect( url_for('login'))
+
+@app.route('/logout/')
+def logout():
+    if 'email' in session:
+        email = session['email']
+        first = session['first_name']
+        session.pop('email')
+        session.pop('first_name')
+        session.pop('uid')
+        session.pop('logged_in')
+        flash('You are logged out')
+        return redirect(url_for('login'))
+    else:
+        flash('you are not logged in. Please login or join')
+        return redirect( url_for('login') )
+
 
 
 @app.route('/seeking/', methods=["GET","POST"])

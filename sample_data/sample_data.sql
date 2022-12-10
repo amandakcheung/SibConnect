@@ -9,8 +9,11 @@ drop table if exists user;
 
 CREATE TABLE `user` (
   `uid` int PRIMARY KEY AUTO_INCREMENT,
-  `name` varchar(30),
-  `email` varchar(60),
+  `email` varchar(50) not null,
+  `first_name` varchar(50) not null,
+  `last_name` varchar(50) not null,
+  `hashed` char(60),
+  unique(email),
   `pronouns` varchar(20),
   `class_year` int(4),
   `interests` varchar(100)
@@ -52,7 +55,6 @@ CREATE TABLE `comment` (
 )
 
 ENGINE = InnoDB;
-
 
 ALTER TABLE `comment` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
 

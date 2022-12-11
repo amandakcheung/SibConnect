@@ -5,6 +5,7 @@ drop table if exists comment;
 drop table if exists post;
 drop table if exists category;
 drop table if exists user;
+drop table if exists interested;
 
 
 CREATE TABLE `user` (
@@ -56,6 +57,22 @@ CREATE TABLE `comment` (
 
 ENGINE = InnoDB;
 
+CREATE TABLE `interested` (
+  `uid` int,
+  `pid` int
+)
+
+ENGINE = InnoDB;
+
+drop table if exists picfile;
+create table picfile (
+    uid int primary key,
+    filename varchar(50),
+    foreign key (uid) references user(uid) 
+        on delete cascade on update cascade
+);
+describe picfile;
+
 ALTER TABLE `comment` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
 
 ALTER TABLE `comment` ADD FOREIGN KEY (`pid`) REFERENCES `post`(`pid`);
@@ -63,4 +80,3 @@ ALTER TABLE `comment` ADD FOREIGN KEY (`pid`) REFERENCES `post`(`pid`);
 ALTER TABLE `post` ADD FOREIGN KEY (`category`) REFERENCES `category` (`cid`);
 
 ALTER TABLE `post` ADD FOREIGN KEY (`uid`) REFERENCES `user` (`uid`);
-

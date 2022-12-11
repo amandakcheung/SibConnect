@@ -57,8 +57,12 @@ def create_profile():
         #gets the user input from the form
         info = request.form
         email = info.get('email')
-        first = info.get('first name')
-        last = info.get('last name')
+        #checks if email exists already
+        if sibconn.get_uid(conn,email):
+            flash('email already has an account')
+            return render_template('create-profile.html')
+        first = info.get('first_name')
+        last = info.get('last_name')
         passwd = info.get('password')
         #create hashing for password
         hashed = bcrypt.hashpw(passwd.encode('utf-8'),
@@ -70,8 +74,12 @@ def create_profile():
         interests = info.get('interests')
         class_year = info.get('class year')
         sibconn.create_profile(conn, email, first, last, hashed, pronouns, class_year, interests)
-        return redirect(url_for('home'))
-
+        print(email)
+        email = str(email)
+        uid = sibconn.get_uid(conn,email)
+        uid = uid.get('uid')
+        print(uid)
+        return redirect(url_for('display_user',uid=uid))
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -125,7 +133,6 @@ def logout():
     else:
         flash('you are not logged in. Please login or join')
         return redirect( url_for('login') )
-
 
 
 @app.route('/seeking/', methods=["GET","POST"])
@@ -217,6 +224,7 @@ def category(category, sort):
             all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'recurring, asc')
         else:
             all_posts = sibconn.get_posts(conn,category)
+        print(all_posts)
         return render_template('posts.html', category=category, 
         all_posts=all_posts)
 
@@ -236,6 +244,52 @@ def display_post(pid):
         else:
             return render_template('display_seeking_post.html', 
             post= full_post, category= category)
+
+@app.route('/user/<uid>/', methods= ['GET'])
+def display_user(uid):
+    ''' This method displays the user's profile information
+    and what they are interested in'''
+    conn = dbi.connect()
+    if request.method == "GET":
+        user_posted = sibconn.find_user_posts(conn, uid)
+        post_pids = sibconn.find_interested_posts(conn,uid)
+        user_interested = []
+        for pid in post_pids:
+            pid = pid.get('pid')
+            user_interested.append(sibconn.get_specific_post(conn,pid))
+        print('uid', uid)
+        user = sibconn.get_user_info(conn,uid)
+        print('user',user)
+        return render_template('profile_page.html', user = user[0], 
+        user_posted = user_posted, user_interested=user_interested)
+
+
+@app.route('/search/', methods=['GET'])
+def search():
+    conn = dbi.connect()
+    if request.method == 'GET':
+        phrase = request.args['search']
+        post_pids = sibconn.search_post(conn,phrase)
+        all_posts = []
+        for pid in post_pids:
+            pid = pid.get('pid')
+            all_posts.append(sibconn.get_specific_post(conn,pid))
+        return render_template('search.html',phrase = phrase, all_posts = all_posts)
+
+@app.route('/user/<uid>/update/',methods=["GET","POST"])
+def update_profile(uid):
+    conn = dbi.connect()
+    curr_uid = session.get('uid')
+    if curr_uid != uid:
+        flash('you do not have permission to edit \
+        this profile; try again')
+    else:
+        if methods == "GET":
+            render_template('update-profile.html', user = user, picture = picture)
+        elif methods == "POST":
+            user = request.form
+            print(user)
+            sibconn.update_profile(conn,uid, user=user)
 
 #end of 11/20
 

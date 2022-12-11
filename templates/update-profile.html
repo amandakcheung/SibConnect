@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Update your profile</h1>
+<p class="intro"> <em>Please put your preference in this form below</em></p>
+
+<form id="Update profile here"
+    method="post"
+    action="{{url_for('update_user')}}"
+    enctype="multipart/form-data">
+
+<p><label>Email:
+  <textarea name="email" rows="1" cols="50" value="user.email"></textarea>
+</label></p>
+
+<p><label>First name:
+  <input required type="text" name="first_name" size="50" value="user.first_name"></label></p>
+
+<p><label>Last name:
+  <input required type="text" name="last_name" size="50" value="user.last_name"></label></p>
+
+<p><label>Password:
+    <input required type="text" name="password" value="hashed"></label></p>
+
+<p><label>Pronouns:
+  <textarea required name="pronouns" rows="1" cols="50" value ='user.pronouns'></textarea>
+</label></p>
+
+<p><label>Interests:
+  <textarea required name="interests" rows="1" cols="50" value="user.interests"></textarea>
+</label></p>
+
+<p><label>Class Year:
+    <select required name="class_year">
+        <option value="user.class_year">choose</option>
+        <option>2026</option>
+        <option>2025</option>
+        <option>2024</option>
+        <option>2023</option>
+        <option>Alum</option>
+    </select>
+</label></p>
+
+<p><label>Pic: <input type="file" name="pic"></label></p>
+
+<p><input type="submit" value="Update Profile">
+
+</form>
+{% if uid != '' and src != '' %}
+<p>Last upload: {{uid}}</p>
+<p> <img src="{{src}}"></p>
+{% endif %}
+{% endblock %}

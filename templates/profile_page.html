@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Hello, {{user.first_name}} {{user.last_name}}</h1>
+
+<div id="user_info">
+    {{picture}}
+    Email: {{user.email}} <br>
+    Pronouns: {{user.pronouns}}<br>
+    Class Year: {{user.class}}<br>
+    Interest: {{user.interests}}<br>
+</div>
+
+<!-- change this to look better -->
+<a href="{{url_for('update_profile', uid = uid)}}"><input type="button" value="Submit" />Edit Profile</a>
+
+<div id="user_posted">
+    {% for post in user_posted %}
+    <h2>You Posted:</h2>
+    <h3><a value="{{post.title}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a>
+        <h4> &emsp; Description: {{post.description}}</h4>
+    </h3>
+    {% endfor %}
+</div>
+
+<div id="user_interested">
+    <h2>You're Interested In:</h2>
+    {% for post1 in user_interested %}
+    <h3><a value="{{post1.title}}" href="{{url_for('display_post',pid=post1.pid)}}">{{post1.title}}</a>
+        <h4> &emsp; Description: {{post1.description}}</h4>
+    </h3>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

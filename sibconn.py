@@ -115,6 +115,102 @@ def sort_recent_post(conn, category, ptype, sorto):
     curs.execute(sql, [category, ptype, sorto])
     return curs.fetchall()
 
+def find_user_posts(conn,uid):
+    '''This method finds all posts that the user
+    has created'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where uid =%s'''
+    curs.execute(sql,[uid])
+    return curs.fetchall()
+
+def find_interested_posts(conn, uid):
+    '''This method finds all posts that the user is interested in'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid from interested where uid = %s'''
+    curs.execute(sql,[uid])
+    return curs.fetchall()
+
+def get_user_info(conn, uid):
+    '''This method finds the name of a uid'''
+    curs= dbi.dict_cursor(conn)
+    sql = '''select first_name, last_name, email, pronouns, class_year, 
+    interests from user where uid = %s'''
+    curs.execute(sql,[uid])
+    return curs.fetchall()
+
+def get_uid(conn,email):
+    '''This method finds the uid of a user
+    based on their email'''
+    curs= dbi.dict_cursor(conn)
+    sql = '''select uid from user where email = %s'''
+    curs.execute(sql,[email])
+    return curs.fetchone()
+
+def search_post(conn, phrase):
+    ''' This method allows users to search
+    must have direct words'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid from post where title like %s or 
+    description like %s'''
+    curs.execute(sql, ['%' + phrase + '%', '%' + phrase + '%'])
+    info = curs.fetchall()
+    return info
+
+
+def get_last_uid(conn):
+    ''' Gets the last inserted uid'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select last_insert_id()'''
+    curs.execute(sql)
+    row = curs.fetchone()
+    return row[0]
+
+def update_profile(conn,uid, user):
+    '''Updates the Profile with New Information '''
+    curs = dbi.dict_cursor(conn)
+    sql = '''update user set email=%s, first_name= %s, 
+    last_name= %s, pronouns= %s, class_year= %s, interests= %s, 
+    where uid=%s'''
+    curs.execute(sql, [user.get('email'), 
+                      user.get('first_name'), 
+                      user.get('last_name'), 
+                      user.get('pronouns'), 
+                      user.get('class_year'),
+                      user.get('interests'),
+                      uid])
+    conn.commit()    
+
+def pic(conn,uid):
+    '''Selects the profile picture '''
+    curs = dbi.dict_cursor(conn)
+    numrows = curs.execute(
+        '''select filename from picfile where uid = %s''',
+        [uid])
+    if numrows == 0:
+        flash('No picture for {}'.format(uid))
+        return redirect(url_for('index'))
+    row = curs.fetchone()
+    return send_from_directory(app.config['UPLOADS'],row['filename'])
+
+def upload(conn):
+    ''' Uploads a profile photo'''
+    try:
+        uid = int(request.form['uid']) # may throw error
+        f = request.files['pic']
+        user_filename = f.filename
+        ext = user_filename.split('.')[-1]
+        filename = secure_filename('{}.{}'.format(uid,ext))
+        pathname = os.path.join(app.config['UPLOADS'],filename)
+        f.save(pathname)
+        curs = dbi.dict_cursor(conn)
+        curs.execute(
+            '''insert into picfile(uid,filename) values (%s,%s)
+                on duplicate key update filename = %s''',
+            [uid, filename, filename])
+        conn.commit()
+        flash('Upload successful')
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
 # testing
 
 if __name__ == '__main__':

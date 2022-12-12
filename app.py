@@ -25,6 +25,9 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+# new for file upload
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 10*1024*1024 # 1 MB
 
 @app.route('/')
 def index():
@@ -285,6 +288,7 @@ def display_user():
     if uid == '':
         flash("you haven't log in yet")
         return redirect (url_for('home'))
+    #src = url_for('pic',uid=uid)
     if request.method == "GET":
         user_posted = sibconn.find_user_posts(conn, uid)
         post_pids = sibconn.find_interested_posts(conn,uid)
@@ -293,8 +297,9 @@ def display_user():
             pid = pid.get('pid')
             user_interested.append(sibconn.get_specific_post(conn,pid))
         user = sibconn.get_user_info(conn,uid)
+        print('user', user)
         return render_template('profile_page.html', user = user, 
-            user_posted = user_posted, user_interested=user_interested)
+            user_posted = user_posted, user_interested=user_interested, src= url_for('pic',uid=uid))
 
 @app.route('/search/', methods=['GET'])
 def search():
@@ -313,17 +318,32 @@ def update_profile():
     conn = dbi.connect()
     uid = session.get('uid')
     user = sibconn.get_user_info(conn,uid)
+    src = url_for('pic',uid=uid)
     print("/user/update/")
     print(user)
     if request.method == "GET":
         #add a picture variable
-        return render_template('update-profile.html', user = user)
+        return render_template('update-profile.html', user = user, src= src)
     elif request.method == "POST":
         user = request.form
         print("/user/update/POST")
         print(user.get('email'))
         sibconn.update_profile(conn, uid, user=user)
+        src = sibconn.upload(conn,request)
         return redirect(url_for("display_user"))
+
+@app.route('/pic/<uid>')
+def pic(conn,uid):
+    '''Selects the profile picture '''
+    curs = dbi.dict_cursor(conn)
+    numrows = curs.execute(
+        '''select filename from picfile where uid = %s''',
+        [uid])
+    if numrows == 0:
+        flash('No picture for {}'.format(uid))
+        return redirect(url_for('index'))
+    row = curs.fetchone()
+    return send_from_directory(app.config['UPLOADS'],row['filename'])
 
 #end of 11/20
 

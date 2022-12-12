@@ -6,6 +6,10 @@ import cs304dbi as dbi
 # ==========================================================
 # The functions that do most of the work.
 
+from flask import (flash, session, request, url_for)
+from werkzeug.utils import secure_filename
+import os
+from app import app
 
 def create_profile(conn, email, first, last, hashed, pronouns, class_year, interests):
     '''
@@ -99,7 +103,7 @@ def get_category_name(conn,cid):
     return curs.fetchone()    
 
 def get_last_pid(conn):
-    ''' This method gets the cid for a given name of category'''
+    '''This method gets the most recent post'''
     curs = dbi.dict_cursor(conn)
     sql = '''select max(pid) from post'''
     curs.execute(sql)
@@ -134,7 +138,7 @@ def get_user_info(conn, uid):
     '''This method finds the name of a uid'''
     curs= dbi.dict_cursor(conn)
     sql = '''select first_name, last_name, email, pronouns, class_year, 
-    interests from user where uid = %s'''
+    interests, dorm from user where uid = %s'''
     curs.execute(sql,[uid])
     return curs.fetchone()
 
@@ -179,29 +183,20 @@ def update_profile(conn,uid, user):
                       user.get('interests'),
                       user.get('dorm'),
                       uid])
-    conn.commit()    
+    conn.commit()
 
-def pic(conn,uid):
-    '''Selects the profile picture '''
-    curs = dbi.dict_cursor(conn)
-    numrows = curs.execute(
-        '''select filename from picfile where uid = %s''',
-        [uid])
-    if numrows == 0:
-        flash('No picture for {}'.format(uid))
-        return redirect(url_for('index'))
-    row = curs.fetchone()
-    return send_from_directory(app.config['UPLOADS'],row['filename'])
 
-def upload(conn):
+def upload(conn, request):
     ''' Uploads a profile photo'''
     try:
-        uid = int(request.form['uid']) # may throw error
+        uid = int(session.get('uid')) # may throw error
+        print(uid)
         f = request.files['pic']
         user_filename = f.filename
         ext = user_filename.split('.')[-1]
         filename = secure_filename('{}.{}'.format(uid,ext))
         pathname = os.path.join(app.config['UPLOADS'],filename)
+        print('pathname',pathname)
         f.save(pathname)
         curs = dbi.dict_cursor(conn)
         curs.execute(
@@ -210,9 +205,11 @@ def upload(conn):
             [uid, filename, filename])
         conn.commit()
         flash('Upload successful')
+        src = url_for('pic',uid=uid)
+        return src
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
-# testing
+
 
 def add_interested(conn, uid,pid):
     ''' adds the user and the pid to the interested table'''

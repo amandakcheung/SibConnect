@@ -136,7 +136,7 @@ def get_user_info(conn, uid):
     sql = '''select first_name, last_name, email, pronouns, class_year, 
     interests from user where uid = %s'''
     curs.execute(sql,[uid])
-    return curs.fetchall()
+    return curs.fetchone()
 
 def get_uid(conn,email):
     '''This method finds the uid of a user
@@ -169,7 +169,7 @@ def update_profile(conn,uid, user):
     '''Updates the Profile with New Information '''
     curs = dbi.dict_cursor(conn)
     sql = '''update user set email=%s, first_name= %s, 
-    last_name= %s, pronouns= %s, class_year= %s, interests= %s, 
+    last_name= %s, pronouns= %s, class_year= %s, interests= %s 
     where uid=%s'''
     curs.execute(sql, [user.get('email'), 
                       user.get('first_name'), 

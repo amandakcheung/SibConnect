@@ -9,7 +9,6 @@ app = Flask(__name__)
 # change comment characters to switch to SQLite
 
 import cs304dbi as dbi
-#import sibconn.py
 import sibconn
 # import cs304dbi_sqlite3 as dbi
 
@@ -79,7 +78,7 @@ def create_profile():
         uid = sibconn.get_uid(conn,email)
         uid = uid.get('uid')
         print(uid)
-        return redirect(url_for('display_user',uid=uid))
+        return redirect(url_for('display_user'))
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -90,8 +89,10 @@ def login():
     #gets the information from the form
     elif request.method == "POST":
         email = request.form.get('email')
+        uid = sibconn.get_uid(conn, email)
         passwd = request.form.get('password')
         row = sibconn.login(conn, email)
+        session['uid'] = uid
         print('debugging for login-row')
         print(row)
         if row is None:
@@ -114,7 +115,7 @@ def login():
             session['uid'] = row['uid']
             session['logged_in'] = True
             session['visits'] = 1
-            return redirect( url_for('home') )
+            return redirect(url_for('display_user'))
         else: 
             flash('Password is incorrect. Try again.')
             return redirect( url_for('login'))
@@ -245,11 +246,14 @@ def display_post(pid):
             return render_template('display_seeking_post.html', 
             post= full_post, category= category)
 
-@app.route('/user/<uid>/', methods= ['GET'])
-def display_user(uid):
+@app.route('/user/', methods= ['GET', 'POST'])
+def display_user():
     ''' This method displays the user's profile information
     and what they are interested in'''
     conn = dbi.connect()
+    uid = session.get('uid','')
+    if uid == '':
+        return redirect (url_for('home'))
     if request.method == "GET":
         user_posted = sibconn.find_user_posts(conn, uid)
         post_pids = sibconn.find_interested_posts(conn,uid)
@@ -257,12 +261,9 @@ def display_user(uid):
         for pid in post_pids:
             pid = pid.get('pid')
             user_interested.append(sibconn.get_specific_post(conn,pid))
-        print('uid', uid)
         user = sibconn.get_user_info(conn,uid)
-        print('user',user)
-        return render_template('profile_page.html', user = user[0], 
-        user_posted = user_posted, user_interested=user_interested)
-
+        return render_template('profile_page.html', user = user, 
+            user_posted = user_posted, user_interested=user_interested)
 
 @app.route('/search/', methods=['GET'])
 def search():
@@ -276,20 +277,22 @@ def search():
             all_posts.append(sibconn.get_specific_post(conn,pid))
         return render_template('search.html',phrase = phrase, all_posts = all_posts)
 
-@app.route('/user/<uid>/update/',methods=["GET","POST"])
-def update_profile(uid):
+@app.route('/user/update/',methods=["GET","POST"])
+def update_profile():
     conn = dbi.connect()
-    curr_uid = session.get('uid')
-    if curr_uid != uid:
-        flash('you do not have permission to edit \
-        this profile; try again')
-    else:
-        if methods == "GET":
-            render_template('update-profile.html', user = user, picture = picture)
-        elif methods == "POST":
-            user = request.form
-            print(user)
-            sibconn.update_profile(conn,uid, user=user)
+    uid = session.get('uid')
+    user = sibconn.get_user_info(conn,uid)
+    print("/user/update/")
+    print(user)
+    if request.method == "GET":
+        #add a picture variable
+        return render_template('update-profile.html', user = user)
+    elif request.method == "POST":
+        user = request.form
+        print("/user/update/POST")
+        print(user.get('email'))
+        sibconn.update_profile(conn, uid, user=user)
+        return redirect(url_for("display_user"))
 
 #end of 11/20
 

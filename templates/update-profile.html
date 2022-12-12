@@ -1,37 +1,38 @@
 {% extends "base.html" %}
 {% block main %}
 <h1>Update your profile</h1>
-<p class="intro"> <em>Please put your preference in this form below</em></p>
+<p class="intro"> <em>Please update your profile information in the form below</em></p>
 
 <form id="Update profile here"
-    method="post"
-    action="{{url_for('update_user')}}"
+    methods="post"
+    action="{{url_for('update_profile')}}"
     enctype="multipart/form-data">
 
 <p><label>Email:
-  <textarea name="email" rows="1" cols="50" value="user.email"></textarea>
+  <input name="email" rows="1" cols="50" value={{user.email}}></input>
 </label></p>
 
 <p><label>First name:
-  <input required type="text" name="first_name" size="50" value="user.first_name"></label></p>
+  <input required type="text" name="first_name" size="50" value={{user.first_name}}></label></p>
 
 <p><label>Last name:
-  <input required type="text" name="last_name" size="50" value="user.last_name"></label></p>
-
-<p><label>Password:
-    <input required type="text" name="password" value="hashed"></label></p>
+  <input required type="text" name="last_name" size="50" value={{user.last_name}}></label></p>
 
 <p><label>Pronouns:
-  <textarea required name="pronouns" rows="1" cols="50" value ='user.pronouns'></textarea>
+  <input required type="text" name="pronouns" rows="1" cols="50" value ={{user.pronouns}}></input>
 </label></p>
 
 <p><label>Interests:
-  <textarea required name="interests" rows="1" cols="50" value="user.interests"></textarea>
+  <input required type="text" name="interests" rows="1" cols="50" value={{user.interests}}></input>
+</label></p>
+
+<p><label>Dorm:
+  <input required name="dorm" rows="1" cols="50" value={{user.dorm}}></input>
 </label></p>
 
 <p><label>Class Year:
     <select required name="class_year">
-        <option value="user.class_year">choose</option>
+        <option value={{user.class_year}}>choose</option>
         <option>2026</option>
         <option>2025</option>
         <option>2024</option>

@@ -1,8 +1,29 @@
 {% extends "base.html" %}
 {% block main %}
 
-<body>
-  <ul class="navMenu">
+<div class = Menu>
+  <form action="{{url_for('category', category='Arts & Crafts', sort='mostrecent')}}">
+    <button id = cat_1 type="submit">Arts & Crafts</button>
+  </form>
+  <form action="{{url_for('category', category='Music', sort='mostrecent')}}">
+    <button id = cat_2 type="submit">Music</button>
+  </form>
+  <form action="{{url_for('category', category='Movies & Shows', sort='mostrecent')}}">
+    <button id = cat_3 type="submit">Movies & Shows</button>
+  </form>
+  <form action="{{url_for('category', category='Language & Culture', sort='mostrecent')}}">
+    <button id = cat_4 type="submit">Language & Culture</button>
+  </form>
+  <form action="{{url_for('category', category='Sports & Outdoor', sort='mostrecent')}}">
+    <button id = cat_5 type="submit">Sports & Outdoor</button>
+  </form>
+  <form action="{{url_for('category', category='Other', sort='mostrecent')}}">
+    <button id = cat_6 type="submit">Other</button>
+  </form>
+</div>
+
+<!-- <body>
+  <ul class="menu">
     <li><a href="{{url_for('category', category='Music', sort='mostrecent')}}">"Music"</a>
     <li><a href="{{url_for('category', category='Arts & Crafts', sort='mostrecent')}}">"Arts & Crafts"</a>
     <li><a href="{{url_for('category', category='Language & Culture', sort='mostrecent')}}">"Language & Culture"</a>
@@ -10,5 +31,5 @@
     <li><a href="{{url_for('category', category='Sports & Outdoor', sort='mostrecent')}}">"Sports & Outdoor"</a>
     <li><a href="{{url_for('category', category='Other', sort='mostrecent')}}">"Other"</a>
   </ul>
-</body>
+</body> -->
 {% endblock %}

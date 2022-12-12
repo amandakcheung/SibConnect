@@ -29,15 +29,8 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 app.config['UPLOADS'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 10*1024*1024 # 1 MB
 
-@app.route('/')
-def index():
-    '''
-    This method is for the main page to display base.html at the url '/'
-    @return the template for base.html will be displayed
-    '''
-    return render_template('base.html')
 
-@app.route('/home/')
+@app.route('/')
 def home():
     '''
     This method is for the main page to display base.html at the url '/'

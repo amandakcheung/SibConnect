@@ -142,6 +142,10 @@ def seeking():
     This processes the form for users who are seeking a specific event.
     '''
     conn = dbi.connect()
+    uid = session.get('uid','')
+    if uid == '':
+        flash("you haven't log in yet")
+        return redirect (url_for('home'))
     if request.method == 'GET':
         categories = sibconn.get_categories(conn)
         return render_template('seeking-form.html', categories = categories)
@@ -174,6 +178,10 @@ def event():
     This processes the form for users who are posting a specific event.
     '''
     conn = dbi.connect()
+    uid = session.get('uid','')
+    if uid == '':
+        flash("you haven't log in yet")
+        return redirect (url_for('home'))
     if request.method == 'GET':
         categories = sibconn.get_categories(conn)
         return render_template('event-form.html', categories= categories)
@@ -273,8 +281,9 @@ def display_user():
     ''' This method displays the user's profile information
     and what they are interested in'''
     conn = dbi.connect()
-    uid = session.get('uid')
+    uid = session.get('uid','')
     if uid == '':
+        flash("you haven't log in yet")
         return redirect (url_for('home'))
     if request.method == "GET":
         user_posted = sibconn.find_user_posts(conn, uid)

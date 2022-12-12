@@ -1,7 +1,10 @@
-/* *{
- font-family:;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap');
 
-} */
+
+*{
+ font-family:'Montserrat', sans-serif;
+
+}
 
 /* Add a black background color to the top navigation */
 .topnav {
@@ -98,6 +101,7 @@
   padding: 14px 16px;
   margin-right: 20px;
 }
+
 
 /* style for menu buttons on home page! */
 .Menu{

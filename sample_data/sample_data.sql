@@ -4,6 +4,7 @@ use sibconn_db;
 drop table if exists comment;
 drop table if exists post;
 drop table if exists category;
+drop table if exists picfile;
 drop table if exists user;
 drop table if exists interested;
 
@@ -17,6 +18,7 @@ CREATE TABLE `user` (
   unique(email),
   `pronouns` varchar(20),
   `class_year` int(4),
+  `dorm` varchar(100),
   `interests` varchar(100)
 )
 
@@ -64,7 +66,7 @@ CREATE TABLE `interested` (
 
 ENGINE = InnoDB;
 
-drop table if exists picfile;
+
 create table picfile (
     uid int primary key,
     filename varchar(50),

@@ -2,6 +2,10 @@
 {% block main %}
 <h1>EVENT: {{post.title}}</h1>
 
+<form action="{{url_for('display_post',pid=post.pid)}}" method="POST">
+    <button type="submit" value="{{interested}}">{{interested}}</button>
+</form>
+
 <div id="{{post.pid}}">
     <h3>
     Description: {{post.description}}<br>
@@ -15,8 +19,6 @@
     </h3>
 </div>
 
-<!-- edit the button -->
-<button>Interested!</button>
 
 
 {% endblock %}

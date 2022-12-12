@@ -4,10 +4,10 @@
 <p class="intro"> <em>Please update your profile information in the form below</em></p>
 
 <form id="Update profile here"
-    methods="post"
+    methods="POST"
     action="{{url_for('update_profile')}}"
     enctype="multipart/form-data">
-
+    
 <p><label>Email:
   <input name="email" rows="1" cols="50" value={{user.email}}></input>
 </label></p>

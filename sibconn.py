@@ -169,7 +169,7 @@ def update_profile(conn,uid, user):
     '''Updates the Profile with New Information '''
     curs = dbi.dict_cursor(conn)
     sql = '''update user set email=%s, first_name= %s, 
-    last_name= %s, pronouns= %s, class_year= %s, interests= %s 
+    last_name= %s, pronouns= %s, class_year= %s, interests= %s, dorm=%s
     where uid=%s'''
     curs.execute(sql, [user.get('email'), 
                       user.get('first_name'), 
@@ -177,6 +177,7 @@ def update_profile(conn,uid, user):
                       user.get('pronouns'), 
                       user.get('class_year'),
                       user.get('interests'),
+                      user.get('dorm'),
                       uid])
     conn.commit()    
 
@@ -212,6 +213,30 @@ def upload(conn):
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
 # testing
+
+def add_interested(conn, uid,pid):
+    ''' adds the user and the pid to the interested table'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''insert into interested(uid,pid) 
+    values (%s, %s)'''
+    curs.execute(sql,[uid,pid])
+    curs.commit()
+
+def check_interested(conn,uid,pid):
+    '''checks if the user and pid are already in the
+    interested table'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select uid,pid from interested
+    where uid = %s and pid = %s'''
+    curs.execute(sql,[uid,pid])
+    return curs.fetchone()
+
+def delete_interested(conn,uid,pid):
+    '''deletes a user, pid from interested table'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''delete from interested where uid = %s and pid = %s'''
+    curs.execute(sql,[uid,pid])
+    curs.commit()
 
 if __name__ == '__main__':
     dbi.cache_cnf()   # defaults to ~/.my.cnf

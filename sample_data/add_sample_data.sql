@@ -3,11 +3,11 @@
 use sibconn_db;
 source sample_data.sql;
 
-insert into user(email, first_name, last_name, hashed, pronouns, class_year)
+insert into user(email, first_name, last_name, hashed, pronouns, class_year, `dorm`, interests)
 values 
-('joe@wellesley.edu', 'Joe', 'Dou','12345', 'he/him', 2022),
-('amy@wellesley.edu', 'Amy', 'Lee', '12345', 'she/her', 2026),
-('matt@wellesley.edu', 'Matt', "Anderson", '12345', 'they/them', 2023);
+('joe@wellesley.edu', 'Joe', 'Dou','12345', 'he/him', 2022, 'beebe', 'music'),
+('amy@wellesley.edu', 'Amy', 'Lee', '12345', 'she/her', 2026, 'tower west', 'Language & Culture'),
+('matt@wellesley.edu', 'Matt', "Anderson", '12345', 'they/them', 2023, 'freeman', 'Arts & Crafts');
 
 insert into category(name)
 values

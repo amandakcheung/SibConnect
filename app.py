@@ -233,25 +233,47 @@ def category(category, sort):
 def display_post(pid):
     '''This method displays the post details'''
     conn = dbi.connect()
+    uid = session.get('uid')
     if request.method == "GET":
         full_post = sibconn.get_specific_post(conn, pid)
         cid = full_post.get('category')
         category = sibconn.get_category_name(conn,cid)
+        if sibconn.check_interested:
+            interested='interested'
+        else:
+            interested="I'm interested"
         print('full post')
         print(full_post)
         if full_post.get('type') == 'event_post':
             return render_template('display_event_post.html', 
-            post= full_post, category= category)
+            post= full_post, category= category, interested=interested)
         else:
             return render_template('display_seeking_post.html', 
-            post= full_post, category= category)
+            post= full_post, category= category, interested=interested)
+    if request.method == "POST":
+        if not uid:
+            flash('you need to log in to add this to your profile')
+            return redirect(url_for('display_post', pid=pid))
+        else:
+            info = request.form
+            print(info)
+            if info.get('submit') == "I'm interested":
+                flash('this post has been added to your interests')
+                sibconn.add_interested(conn,uid,pid)
+                return redirect(url_for('display_post',pid=pid))
+            if info.get('submit') == 'interested':
+                flash('this post has been removed from your interests')
+                sibconn.delete_interested(conn,uid,pid)
+                return redirect(url_for('display_post',pid=pid))
+            else:
+                print('not working')
 
 @app.route('/user/', methods= ['GET', 'POST'])
 def display_user():
     ''' This method displays the user's profile information
     and what they are interested in'''
     conn = dbi.connect()
-    uid = session.get('uid','')
+    uid = session.get('uid')
     if uid == '':
         return redirect (url_for('home'))
     if request.method == "GET":

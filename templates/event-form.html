@@ -9,7 +9,8 @@
         <form method="post" action="{{url_for('event')}}">
             <div class = "input_field">
                 <label> Title: </label>
-                <input type="text" class = input required name='title' rows="5" cols="50">
+                <input type="text" class = input 
+                required name='title' rows="5" cols="50">
             </div>
             <div class = "input_field">
                 <label>Category:</label>
@@ -24,35 +25,47 @@
             </div>
             <div class = "input_field">
                 <label> Description (add the specific location in the description): </label>
-                <textarea required name="description" class = textarea rows="5" cols="30"></textarea>
+                <textarea required name="description" 
+                class = textarea rows="5" cols="30"></textarea>
             </div>
             <div class = "input_field">
                 <label> Location: </label>
                 <div class = radio_btn>
-                    <input type="radio" id="quint" name="location" value="Quint/ West Side"> Quint/ West Side <br>
-                    <input type="radio" id="tower" name="location" value="Tower Court"> Tower Court <br>
-                    <input type="radio" id="new_dorms" name="location" value="New Dorms"> New Dorms <br>
-                    <input type="radio" id="stoned" name="location" value="Stone Davis"> Stone Davis <br>
-                    <input type="radio" id="branch" name="location" value="Branch (Lake House etc)"> Branch (Lake House etc)<br>
-                    <input type="radio" id="none" name="location" value="n/a"> n/a
+                    <labeL><input type="radio" id="quint" name="location" 
+                        value="Quint/ West Side"> Quint/ West Side <br></labrel>
+                    <label><input type="radio" id="tower" name="location" 
+                        value="Tower Court"> Tower Court <br></label>
+                    <label><input type="radio" id="new_dorms" name="location" 
+                        value="New Dorms"> New Dorms <br></label>
+                    <label><input type="radio" id="stoned" name="location" 
+                        value="Stone Davis"> Stone Davis <br></label>
+                    <label><input type="radio" id="branch" name="location" 
+                        value="Branch (Lake House etc)"> Branch (Lake House etc)<br></label>
+                    <label><input type="radio" id="none" name="location" 
+                        value="n/a"> n/a</label>
                 </div>   
             </div>
             <div class = "input_field">
                 <label> Date/Time: </label>
-                <input required type='datetime-local' class = input name='date_time' rows="5" cols="30">
+                <input required type='datetime-local' 
+                class = input name='date_time' rows="5" cols="30">
             </div>
             <div class = "input_field">
                 <label> Length (in minutes):</label>
-                <input type="text" class = input required name='length' rows="5" cols="30"> 
+                <input type="text" class = input 
+                required name='length' rows="5" cols="30"> 
             </div>
             <div class = "input_field">
                 <label> Recurring: </label>
-                <input class = radio_btn type="radio" id="yes" name="recurring" value="Yes"> Yes
-                <input class = radio_btn type="radio" id="no" name="recurring" value="No"> No
+                <input class = radio_btn type="radio" 
+                id="yes" name="recurring" value="Yes"> Yes
+                <input class = radio_btn type="radio" 
+                id="no" name="recurring" value="No"> No
             </div>
             <div class = "input_field">
                 <label> Capacity: </label>
-                <input type="text" class = input required name=capacity rows="5" cols="30">
+                <input type="text" class = input 
+                required name=capacity rows="5" cols="30">
             </div>
             <div class = "input_field">
                 <label>Skill Level (1- beginner 5- expert): </label>

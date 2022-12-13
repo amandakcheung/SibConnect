@@ -49,7 +49,7 @@ def new_seeking(category, description, title, conn,uid):
 def new_event(category, title, desc, location, date, length, recurring, capacity, skill, conn, uid):
     '''
     This method inserts an event post into the post database
-    @param the tt, title, release date of the movie, connector for the database
+    @param category, title, desc, location, date, length, recurring, capacity, skill, uid, conn
     '''
     curs = dbi.dict_cursor(conn)
     sql = '''
@@ -65,7 +65,7 @@ def get_categories(conn):
     '''This method selects all the categories 
     '''
     curs = dbi.dict_cursor(conn)
-    sql =  '''select * from category'''
+    sql =  '''select cid, name from category'''
     curs.execute(sql)
     return curs.fetchall()
 

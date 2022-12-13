@@ -82,12 +82,12 @@ def create_profile():
 @app.route('/login/', methods=["GET", "POST"])
 def login():
     '''this method allows users to log in'''
-    conn = dbi.connect()
     #gets the blank create profile form 
     if request.method == 'GET':
         return render_template('log-in.html')
     #gets the information from the form
     elif request.method == "POST":
+        conn = dbi.connect()
         email = request.form.get('email')
         uid = sibconn.get_uid(conn, email)
         passwd = request.form.get('password')
@@ -207,8 +207,8 @@ def event():
         #create a new event and redirect url to the event page 
         else:
             print("succeessfully recorded the entry")
-            cid = sibconn.get_category(conn,category)
-            cid = cid.get('cid')
+            cid_dict = sibconn.get_category(conn,category)
+            cid = cid_dict.get('cid')
             sibconn.new_event(
                 cid, title, desc, location, date, length,
                 recurring, capacity, skill, conn, uid)

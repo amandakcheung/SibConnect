@@ -32,7 +32,7 @@
 /* Change the color of links on hover */
 .topnav a:hover, .dropdown:hover .dropbtn {
   background-color: white;
-  color: #ff8800;
+  color: orangered;
   /* border: 1px solid #fec107; */
 }
 
@@ -160,7 +160,7 @@
   font-size:28px;
   font-weight: 700;
   margin-bottom: 25px;
-  color: #ff7251;
+  color: orangered;
   text-align: center;
   
 }
@@ -227,13 +227,13 @@
 /* style for login form */
 body{
   text-align: center;
-  color: #ff7251;
+  color: orangered;
   font-weight: bolder;
 }
 
 .intro {
   text-align: center;
-  color: #ff7251;
+  color: orangered;
 }
 
 #login-form{
@@ -253,7 +253,7 @@ input[type="submit"]{
   border: 1px solid;
   background: white;
   font-size: 18px;
-  color:#ff7251;
+  color:orangered;
 }
 
 /* style for create profile form */

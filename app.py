@@ -167,7 +167,6 @@ def seeking():
             cid = category.get('cid')
             sibconn.new_seeking(cid, desc, title, conn,uid)
             pid = sibconn.get_last_pid(conn)
-            pid = pid.get('max(pid)')
             return redirect(url_for('display_post', pid=pid))
 
 @app.route('/event/', methods=["GET", "POST"])

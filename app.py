@@ -241,7 +241,7 @@ def category(category, sort):
                         'Branch (Lake House etc)':
             all_posts = sibconn.sort_by_dorm(conn,sort,category)
         elif sort == '1' or '0':
-            all_posts = sibconn.sort_by_recurring(conn, sort, category)
+            all_posts = sibconn.sort_by_recurring(conn, sort, category)      
         else:
             all_posts = sibconn.get_posts(conn,category)
         print(all_posts)
@@ -361,14 +361,19 @@ def pic(conn,uid):
     row = curs.fetchone()
     return send_from_directory(app.config['UPLOADS'],row['filename'])
 
-@app.route('/all_posts/')
-def all_posts():
+@app.route('/all_posts/<sort>/', methods=['GET', 'POST'])
+def all_posts(sort):
     '''displays all the posts'''
     conn = dbi.connect()
     uid = session.get('uid')
-    all_posts = sibconn.get_all_posts(conn)
-    return render_template('posts.html', category = 'all', all_posts=all_posts)
-#end of 11/20
+    if request.method == 'GET':
+        if sort == 'everything':
+            all_posts = sibconn.get_all_posts(conn)
+            return render_template('all_posts.html', category = 'all', all_posts=all_posts)
+        else:
+            all_posts = sibconn.sort_by_type(conn, sort)
+            return render_template('all_posts.html', category=category, 
+            all_posts=all_posts) 
 
 
 #use to make the database run

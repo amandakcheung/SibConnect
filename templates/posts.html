@@ -36,13 +36,19 @@
     </select>
     </form>
 
-
+<form action="#" method="POST">
+    <label> Filter by Event Type:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=all, sort='event_post')}}">Event Posts</option>
+    <option value="{{url_for('category', category=all, sort='seeking_post')}}" >Seeking Posts</option>
+    </select>
+    </form>
 </form>
 <div id="posts">
     {% for post in all_posts %}
-    <h3><a value="{{post.title}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a>
-        <h4> &emsp; Description: {{post.description}}</h4>
-    </h3>
+    <h3><a value="{{post.title}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4>Description: {{post.description}}</h4>
     {% endfor %}
 </div>
 

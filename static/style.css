@@ -160,7 +160,7 @@
   font-size:28px;
   font-weight: 700;
   margin-bottom: 25px;
-  color: #fec107;
+  color: #ff7251;
   text-align: center;
   
 }
@@ -227,13 +227,13 @@
 /* style for login form */
 body{
   text-align: center;
-  color: #fec107;
+  color: #ff7251;
   font-weight: bolder;
 }
 
 .intro {
   text-align: center;
-  color: #fec107;
+  color: #ff7251;
 }
 
 #login-form{
@@ -253,7 +253,7 @@ input[type="submit"]{
   border: 1px solid;
   background: white;
   font-size: 18px;
-  color: #fec107;
+  color:#ff7251;
 }
 
 /* style for create profile form */

@@ -265,7 +265,7 @@ def sort_by_recurring(conn,num, category):
     category = (select cid from category where name = %s)'''
     curs.execute(sql,[num,category])
     return curs.fetchall()
-    
+
 def get_all_posts(conn):
     '''retrieves all posts'''
     curs = dbi.dict_cursor(conn)
@@ -274,6 +274,15 @@ def get_all_posts(conn):
     from post 
     order by pid desc'''
     curs.execute(sql)
+    return curs.fetchall()
+
+def sort_by_type(conn, sort):
+    '''sorts the posts by seeking or event post'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location,
+    date_time, length, recurring, capacity, skill, description
+    from post where type = %s'''
+    curs.execute(sql,[sort])
     return curs.fetchall()
 
 if __name__ == '__main__':

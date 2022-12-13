@@ -16,7 +16,7 @@
 <div class = "topnav">
       <!--<a class="active" href="{{url_for('home')}}">Home</a> -->
       <a href="{{url_for('home')}}">Home</a>
-      <a href="{{url_for('all_posts')}}">All Posts</a>
+      <a href="{{url_for('all_posts', sort='everything')}}">All Posts</a>
       <a href="{{url_for('seeking')}}">Seeking events to participate in</a>
       <a href="{{url_for('event')}}">Create/ pub your event </a>
       <div class="search-box">
@@ -47,7 +47,7 @@
 {% endwith %}
 
 
-<!-- is home page is with categories but base is just the nav bar--->
+<!-- is home page is with categories but base is just the nav bar-->
 
 {% block main %}
 

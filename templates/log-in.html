@@ -1,20 +1,23 @@
 {% extends "base.html" %}
 {% block main %}
-<h1>Login</h1>
+<body>
+  <h1>Login</h1>
+</body>
+
 <p class="intro"> <em>Please log in using your email and password</em></p>
 
-<form id="log in form"
+<form id="login-form"
     method="post"
     action="{{url_for('login')}}">
 
 <p><label>Email:
-  <textarea required name="email" rows="1" cols="50"></textarea>
+  <textarea required name="email" rows="1" cols="30"></textarea>
 </label></p>
 
 <p><label>Password:
   <input required type="text" name="password"></label></p>
 
-<p><input type="submit" value="Login">
+<p><input type="submit" value="Login"></p>
 
 </form>
 {% endblock %}

@@ -35,8 +35,6 @@ def login(conn, email):
                  [email])
     return curs.fetchone()
 
-
-
 def new_seeking(category, description, title, conn):
     '''
     This method inserts a seeking post into the post database
@@ -233,7 +231,23 @@ def delete_interested(conn,uid,pid):
     curs = dbi.dict_cursor(conn)
     sql = '''delete from interested where uid = %s and pid = %s'''
     curs.execute(sql,[uid,pid])
-    curs.commit()
+    conn.commit()
+    
+def create_comment(conn,pid,uid,commenttext):
+    '''Inserts new comment into comment database'''
+    curs = dbi.cursor(conn)
+    curs.execute('''insert into comment (commentid,pid,uid,commenttext) values (%s,%s,%s,%s)'''
+                 , [None,pid,uid,commenttext])
+    conn.commit() 
+    
+def grab_comments(conn,pid):
+    '''Finds all comments for a post'''
+    curs = dbi.dict_cursor(conn)
+    sql = ''' select comment.commenttext, user.first_name, user.last_name
+    from comment inner join user using (uid)
+    where pid = %s;'''
+    curs.execute(sql,[pid])
+    return curs.fetchall()
 
 if __name__ == '__main__':
     dbi.cache_cnf()   # defaults to ~/.my.cnf

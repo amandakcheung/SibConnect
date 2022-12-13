@@ -223,3 +223,49 @@
 }
 
 /* end of event-form css */
+
+/* style for login form */
+body{
+  text-align: center;
+  color: #fec107;
+  font-weight: bolder;
+}
+
+.intro {
+  text-align: center;
+  color: #fec107;
+}
+
+#login-form{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  background-color:#fec107;
+  color: white;
+  font-weight: 800;
+  border-radius: 5px;
+  width: 400px;
+}
+
+input[type="submit"]{
+  height: 50px;
+  border: 1px solid;
+  background: white;
+  font-size: 18px;
+  color: #fec107;
+}
+
+/* style for create profile form */
+
+#create-profile-form{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  background-color:#fec107;
+  color: white;
+  font-weight: 800;
+  border-radius: 5px;
+  width: 400px;
+}

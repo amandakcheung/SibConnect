@@ -35,7 +35,7 @@ def login(conn, email):
                  [email])
     return curs.fetchone()
 
-def new_seeking(category, description, title, conn):
+def new_seeking(category, description, title, conn,uid):
     '''
     This method inserts a seeking post into the post database
     @param the tt, title, release date of the movie, connector for the database
@@ -43,23 +43,21 @@ def new_seeking(category, description, title, conn):
     curs = dbi.dict_cursor(conn)
     sql = '''insert into post(pid, uid, title, type, category,description) 
     values (%s, %s, %s, 'seeking_post', %s, %s);'''
-    #place holder uid
-    curs.execute(sql, [None, 1, title, category, description])
+    curs.execute(sql, [None, uid, title, category, description])
     conn.commit()
 
-def new_event(category, title, desc, location, date, length, recurring, capacity, skill, conn):
+def new_event(category, title, desc, location, date, length, recurring, capacity, skill, conn, uid):
     '''
     This method inserts an event post into the post database
     @param the tt, title, release date of the movie, connector for the database
     '''
     curs = dbi.dict_cursor(conn)
-    #place holder uid
     sql = '''
     insert into post(
         pid, uid, type, title, category, location, date_time, length, 
         recurring, capacity, skill, description)
     values (%s, %s, 'event_post', %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
-    curs.execute(sql, [None, 1, title, category, 
+    curs.execute(sql, [None, uid, title, category, 
     location, date, length, recurring, capacity, skill, desc])
     conn.commit()
 
@@ -103,11 +101,11 @@ def get_category_name(conn,cid):
 def get_last_pid(conn):
     '''This method gets the most recent post'''
     curs = dbi.dict_cursor(conn)
-    sql = '''select max(pid) from post'''
+    sql = '''select last_insert_id()'''
     curs.execute(sql)
     return curs.fetchone()
 
-def sort_recent_post(conn, category, ptype, sorto):
+def sort_recent_post(conn, category, ptype,sorto):
     '''This method sorts event posts from earliest to 
     latest or latest to earliest'''
     curs = dbi.dict_cursor(conn)
@@ -158,7 +156,6 @@ def search_post(conn, phrase):
     info = curs.fetchall()
     return info
 
-
 def get_last_uid(conn):
     ''' Gets the last inserted uid'''
     curs = dbi.dict_cursor(conn)
@@ -203,7 +200,7 @@ def upload(conn, request):
             [uid, filename, filename])
         conn.commit()
         flash('Upload successful')
-        src = url_for('pic',uid=uid)
+        src = url_for('pic',conn=conn,uid=uid)
         return src
     except Exception as err:
         flash('Upload failed {why}'.format(why=err))
@@ -215,7 +212,7 @@ def add_interested(conn, uid,pid):
     sql = '''insert into interested(uid,pid) 
     values (%s, %s)'''
     curs.execute(sql,[uid,pid])
-    curs.commit()
+    conn.commit()
 
 def check_interested(conn,uid,pid):
     '''checks if the user and pid are already in the
@@ -247,6 +244,36 @@ def grab_comments(conn,pid):
     from comment inner join user using (uid)
     where pid = %s;'''
     curs.execute(sql,[pid])
+    return curs.fetchall()
+
+def sort_by_dorm(conn,dorm, category):
+    '''Displays all the events happening in a dorm'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location, 
+    date_time, length, recurring, capacity, skill, description
+    from post where location = %s and type = 'event_post' and 
+    category = (select cid from category where name = %s)'''
+    curs.execute(sql,[dorm,category])
+    return curs.fetchall()
+
+def sort_by_recurring(conn,num, category):
+    '''Displays either recurring or not'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location,
+    date_time, length, recurring, capacity, skill, description
+    from post where recurring = %s and type='event_post' and 
+    category = (select cid from category where name = %s)'''
+    curs.execute(sql,[num,category])
+    return curs.fetchall()
+    
+def get_all_posts(conn):
+    '''retrieves all posts'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location,
+    date_time, length, recurring, capacity, skill, description
+    from post 
+    order by pid desc'''
+    curs.execute(sql)
     return curs.fetchall()
 
 if __name__ == '__main__':

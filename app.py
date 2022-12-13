@@ -78,6 +78,7 @@ def create_profile():
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
+    '''this method allows users to log in'''
     conn = dbi.connect()
     #gets the blank create profile form 
     if request.method == 'GET':
@@ -118,6 +119,7 @@ def login():
 
 @app.route('/logout/')
 def logout():
+    '''this method allows users to log out'''
     if 'email' in session:
         email = session['email']
         first = session['first_name']
@@ -163,7 +165,7 @@ def seeking():
         else:
             category = sibconn.get_category(conn,category)
             cid = category.get('cid')
-            sibconn.new_seeking(cid, desc, title, conn)
+            sibconn.new_seeking(cid, desc, title, conn,uid)
             pid = sibconn.get_last_pid(conn)
             pid = pid.get('max(pid)')
             return redirect(url_for('display_post', pid=pid))
@@ -184,7 +186,7 @@ def event():
     elif request.method == "POST":
         #gets the information from the form
         info = request.form
-        print(info)
+        print('hello', info)
         title = info.get('title')
         category = info.get('category-list')
         desc = info.get('description')
@@ -207,9 +209,9 @@ def event():
             cid = cid.get('cid')
             sibconn.new_event(
                 cid, title, desc, location, date, length,
-                recurring, capacity, skill, conn)
+                recurring, capacity, skill, conn, uid)
             pid = sibconn.get_last_pid(conn)
-            pid = pid.get('max(pid)')
+            pid = pid.get('last_insert_id()')
             return redirect(url_for('display_post', pid=pid))
 
 @app.route('/<category>/<sort>',methods= ['GET','POST'])
@@ -218,15 +220,28 @@ def category(category, sort):
     conn = dbi.connect()
     if request.method == "GET":
         if sort == 'leastrecent':
-            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'pid, asc')
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'pid, asc')
         elif sort == "mostrecent":
-            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'pid, desc')
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'pid, desc')
         elif sort == "lowskill":
-            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'skill, asc')
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'skill, asc')
         elif sort == "highskill":
-            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'skill, desc')
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'skill, desc')
         elif sort == "recurring": #recurring is being weird
-            all_posts = sibconn.sort_recent_post(conn, category, 'event_post', 'recurring, asc')
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'recurring, asc')
+        elif sort == 'West Side':
+            all_posts = sibconn.sort_by_dorm(conn,'Quint/ West Side',category)
+        elif sort == 'Tower Court' or sort == \
+                        'Stone Davis' or sort == 'New Dorms' or sort == \
+                        'Branch (Lake House etc)':
+            all_posts = sibconn.sort_by_dorm(conn,sort,category)
+        elif sort == '1' or '0':
+            all_posts = sibconn.sort_by_recurring(conn, sort, category)
         else:
             all_posts = sibconn.get_posts(conn,category)
         print(all_posts)
@@ -243,10 +258,12 @@ def display_post(pid):
         cid = full_post.get('category')
         category = sibconn.get_category_name(conn,cid)
         comments= sibconn.grab_comments(conn,pid)
-        if sibconn.check_interested:
-            interested='interested'
+        if sibconn.check_interested(conn,uid,pid):
+            print('pressed intersted uid', uid)
+            interested='uninterested'
         else:
-            interested="I'm interested"
+            print('need to press interested uid', uid)
+            interested="interested"
         if full_post.get('type') == 'event_post':
             return render_template('display_event_post.html', 
             post= full_post, comments=comments,category= category, interested=interested)
@@ -259,11 +276,13 @@ def display_post(pid):
             return redirect(url_for('display_post', pid=pid))
         else:
             info = request.form
-            if info.get('submit') == "I'm interested":
+            if info.get('submit') == "interested":
                 flash('this post has been added to your interests')
+                print('interested uid',uid)
+                print('interested pid',pid)
                 sibconn.add_interested(conn,uid,pid)
                 return redirect(url_for('display_post',pid=pid))
-            elif info.get('submit') == 'interested':
+            elif info.get('submit') == 'uninterested':
                 flash('this post has been removed from your interests')
                 sibconn.delete_interested(conn,uid,pid)
                 return redirect(url_for('display_post',pid=pid))
@@ -294,13 +313,14 @@ def display_user():
         user = sibconn.get_user_info(conn,uid)
         print('user', user)
         return render_template('profile_page.html', user = user, 
-            user_posted = user_posted, user_interested=user_interested, src= url_for('pic',uid=uid))
+            user_posted = user_posted, user_interested=user_interested, src= url_for('pic',conn=conn,uid=uid))
 
 @app.route('/search/', methods=['GET'])
 def search():
+    '''allows users to search the website'''
     conn = dbi.connect()
     if request.method == 'GET':
-        phrase = request.args['search']
+        phrase = request.args['search a post']
         post_pids = sibconn.search_post(conn,phrase)
         all_posts = []
         for pid in post_pids:
@@ -310,10 +330,11 @@ def search():
 
 @app.route('/user/update/',methods=["GET","POST"])
 def update_profile():
+    '''updates the profile after user changes something'''
     conn = dbi.connect()
     uid = session.get('uid')
     user = sibconn.get_user_info(conn,uid)
-    src = url_for('pic',uid=uid)
+    src = url_for('pic',conn=conn,uid=uid)
     print("/user/update/")
     print(user)
     if request.method == "GET":
@@ -327,7 +348,7 @@ def update_profile():
         src = sibconn.upload(conn,request)
         return redirect(url_for("display_user"))
 
-@app.route('/pic/<uid>')
+@app.route('/pic/<uid>/')
 def pic(conn,uid):
     '''Selects the profile picture '''
     curs = dbi.dict_cursor(conn)
@@ -340,6 +361,13 @@ def pic(conn,uid):
     row = curs.fetchone()
     return send_from_directory(app.config['UPLOADS'],row['filename'])
 
+@app.route('/all_posts/')
+def all_posts():
+    '''displays all the posts'''
+    conn = dbi.connect()
+    uid = session.get('uid')
+    all_posts = sibconn.get_all_posts(conn)
+    return render_template('posts.html', category = 'all', all_posts=all_posts)
 #end of 11/20
 
 

@@ -69,6 +69,9 @@ def create_profile():
         interests = info.get('interests')
         class_year = info.get('class year')
         sibconn.create_profile(conn, email, first, last, hashed, pronouns, class_year, interests)
+        # uid = sibconn.get_last_pid(conn)
+        # uid = uid.get('last_insert_id')
+        # session['uid'] = uid
         print(email)
         email = str(email)
         uid = sibconn.get_uid(conn,email)

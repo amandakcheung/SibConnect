@@ -1,0 +1,1540 @@
+#Authors: SibConnect- Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino
+#Date: 11/17/2022
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
+from werkzeug.utils import secure_filename
+app = Flask(__name__)
+
+# one or the other of these. Defaults to MySQL (PyMySQL)
+# change comment characters to switch to SQLite
+
+import cs304dbi as dbi
+import sibconn
+# import cs304dbi_sqlite3 as dbi
+
+import random
+import bcrypt
+
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+# new for file upload
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 10*1024*1024 # 1 MB
+
+
+@app.route('/')
+def home():
+    '''
+    This method is for the main page to display base.html at the url '/'
+    @return the template for base.html will be displayed
+    '''
+    return render_template('home.html')
+
+@app.route('/create_profile/', methods=["GET", "POST"])
+def create_profile():
+    '''
+    Upload the data that users filled out with the log-in form to the database
+    generate a unique userid
+    '''
+    conn = dbi.connect()
+    #gets the blank create profile form 
+    if request.method == 'GET':
+        return render_template('create-profile.html')
+    elif request.method == "POST":
+        #gets the user input from the form
+        info = request.form
+        email = info.get('email')
+        #checks if email exists already
+        if sibconn.get_uid(conn,email):
+            flash('email already has an account')
+            return render_template('create-profile.html')
+        first = info.get('first_name')
+        last = info.get('last_name')
+        passwd = info.get('password')
+        #create hashing for password
+        hashed = bcrypt.hashpw(passwd.encode('utf-8'),
+                           bcrypt.gensalt())
+        stored = hashed.decode('utf-8')
+        print('debugging for hash')
+        print(passwd, type(passwd), hashed, stored)
+        pronouns = info.get('pronouns')
+        interests = info.get('interests')
+        class_year = info.get('class year')
+        sibconn.create_profile(conn, email, first, last, hashed, pronouns, class_year, interests)
+        # uid = sibconn.get_last_pid(conn)
+        # uid = uid.get('last_insert_id')
+        # session['uid'] = uid
+        print(email)
+        email = str(email)
+        uid = sibconn.get_uid(conn,email)
+        uid = uid.get('uid')
+        print(uid)
+        return redirect(url_for('display_user'))
+
+@app.route('/login/', methods=["GET", "POST"])
+def login():
+    '''this method allows users to log in'''
+    #gets the blank create profile form 
+    if request.method == 'GET':
+        return render_template('log-in.html')
+    #gets the information from the form
+    elif request.method == "POST":
+        conn = dbi.connect()
+        email = request.form.get('email')
+        uid = sibconn.get_uid(conn, email)
+        passwd = request.form.get('password')
+        row = sibconn.login(conn, email)
+        session['uid'] = uid
+        print('debugging for login-row')
+        print(row)
+        if row is None:
+            #redirect user to create profile
+            flash("You don't have a profile yet, create a profile.")
+            return redirect( url_for('create_profile'))
+        stored = row['hashed']
+        first = row['first_name']
+        print('database has stored: {} {}'.format(stored,type(stored)))
+        print('form supplied passwd: {} {}'.format(passwd,type(passwd)))
+        hashed2 = bcrypt.hashpw(passwd.encode('utf-8'),
+                                stored.encode('utf-8'))
+        hashed2_str = hashed2.decode('utf-8')
+        print('rehash is: {} {}'.format(hashed2_str,type(hashed2_str)))
+        if hashed2_str == stored:
+            print('they match!')
+            flash('Welcome '+ first + '!')
+            session['email'] = email
+            session['first_name'] = first
+            session['uid'] = row['uid']
+            session['logged_in'] = True
+            session['visits'] = 1
+            return redirect(url_for('display_user'))
+        else: 
+            flash('Password is incorrect. Try again.')
+            return redirect( url_for('login'))
+
+@app.route('/logout/')
+def logout():
+    '''this method allows users to log out'''
+    if 'email' in session:
+        email = session['email']
+        first = session['first_name']
+        session.pop('email')
+        session.pop('first_name')
+        session.pop('uid')
+        session.pop('logged_in')
+        flash('You are logged out')
+        return redirect(url_for('login'))
+    else:
+        flash('you are not logged in. Please login or join')
+        return redirect( url_for('login') )
+
+
+@app.route('/seeking/', methods=["GET","POST"])
+def seeking():
+    '''
+    This processes the form for users who are seeking a specific event.
+    '''
+    conn = dbi.connect()
+    uid = session.get('uid','')
+    if uid == '':
+        flash("you haven't log in yet")
+        return redirect (url_for('home'))
+    if request.method == 'GET':
+        categories = sibconn.get_categories(conn)
+        return render_template('seeking-form.html', categories = categories)
+    elif request.method == "POST":
+        #gets the information from the form
+        info = request.form
+        title= info.get('title')
+        category = info.get('category-list')
+        desc = info.get('description')
+        print('info')
+        print(info)
+        #forces the user to resubmit the form if any of the above are missing
+        if not category or not desc or not title:
+            print(category)
+            print(desc)
+            flash('please fill out all parts of the form')
+            return redirect(url_for('seeking'))
+        #returns to the detailed post that's posted
+        else:
+            category = sibconn.get_category(conn,category)
+            cid = category.get('cid')
+            sibconn.new_seeking(cid, desc, title, conn,uid)
+            pid = sibconn.get_last_pid(conn)
+            return redirect(url_for('display_post', pid=pid))
+
+@app.route('/event/', methods=["GET", "POST"])
+def event():
+    '''
+    This processes the form for users who are posting a specific event.
+    '''
+    conn = dbi.connect()
+    uid = session.get('uid','')
+    if uid == '':
+        flash("you haven't log in yet")
+        return redirect (url_for('home'))
+    if request.method == 'GET':
+        categories = sibconn.get_categories(conn)
+        return render_template('event-form.html', categories= categories)
+    elif request.method == "POST":
+        #gets the information from the form
+        info = request.form
+        print('hello', info)
+        title = info.get('title')
+        category = info.get('category-list')
+        desc = info.get('description')
+        location = info.get('location')   
+        date= info.get('date_time')     
+        length= info.get('length')
+        recurring= info.get('recurring')
+        capacity= info.get('capacity')
+        skill= info.get('skill')
+        #forces the user to resubmit the form if any of the above are missing
+        if not category or not desc or not location or (
+            not date or not length or not recurring or not capacity or (
+                not skill or not title)):
+            flash('please fill out all parts of the form')
+            return redirect(url_for('event'))
+        #create a new event and redirect url to the event page 
+        else:
+            print("succeessfully recorded the entry")
+            cid_dict = sibconn.get_category(conn,category)
+            cid = cid_dict.get('cid')
+            sibconn.new_event(
+                cid, title, desc, location, date, length,
+                recurring, capacity, skill, conn, uid)
+            pid = sibconn.get_last_pid(conn)
+            pid = pid.get('last_insert_id()')
+            return redirect(url_for('display_post', pid=pid))
+
+@app.route('/<category>/<sort>',methods= ['GET','POST'])
+def category(category, sort):
+    ''' This methods displays the category's posts'''
+    conn = dbi.connect()
+    if request.method == "GET":
+        if sort == 'leastrecent':
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'pid, asc')
+        elif sort == "mostrecent":
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'pid, desc')
+        elif sort == "lowskill":
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'skill, asc')
+        elif sort == "highskill":
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'skill, desc')
+        elif sort == "recurring": #recurring is being weird
+            all_posts = sibconn.sort_recent_post(conn, category, 
+            'event_post', 'recurring, asc')
+        elif sort == 'West Side':
+            all_posts = sibconn.sort_by_dorm(conn,'Quint/ West Side',category)
+        elif sort == 'Tower Court' or sort == \
+                        'Stone Davis' or sort == 'New Dorms' or sort == \
+                        'Branch (Lake House etc)':
+            all_posts = sibconn.sort_by_dorm(conn,sort,category)
+        elif sort == '1' or '0':
+            all_posts = sibconn.sort_by_recurring(conn, sort, category)      
+        else:
+            all_posts = sibconn.get_posts(conn,category)
+        print(all_posts)
+        return render_template('posts.html', category=category, 
+        all_posts=all_posts)
+
+@app.route('/post/<pid>/', methods= ['GET','POST'])
+def display_post(pid):
+    '''This method displays the post details'''
+    conn = dbi.connect()
+    uid = session.get('uid')
+    if request.method == "GET":
+        full_post = sibconn.get_specific_post(conn, pid)
+        cid = full_post.get('category')
+        category = sibconn.get_category_name(conn,cid)
+        comments= sibconn.grab_comments(conn,pid)
+        if sibconn.check_interested(conn,uid,pid):
+            print('pressed intersted uid', uid)
+            interested='uninterested'
+        else:
+            print('need to press interested uid', uid)
+            interested="interested"
+        if full_post.get('type') == 'event_post':
+            return render_template('display_event_post.html', 
+            post= full_post, comments=comments,category= category, interested=interested)
+        else:
+            return render_template('display_seeking_post.html', 
+            post= full_post, comments=comments,category= category, interested=interested)
+    if request.method == "POST":
+        if not uid:
+            flash('you need to log in!')
+            return redirect(url_for('display_post', pid=pid))
+        else:
+            info = request.form
+            if info.get('submit') == "interested":
+                flash('this post has been added to your interests')
+                print('interested uid',uid)
+                print('interested pid',pid)
+                sibconn.add_interested(conn,uid,pid)
+                return redirect(url_for('display_post',pid=pid))
+            elif info.get('submit') == 'uninterested':
+                flash('this post has been removed from your interests')
+                sibconn.delete_interested(conn,uid,pid)
+                return redirect(url_for('display_post',pid=pid))
+            elif info.get('submit') == 'comment':
+                commenttext= info.get('commenttext')
+                sibconn.create_comment(conn,pid,uid,commenttext)
+                return redirect(url_for('display_post',pid=pid))
+            else:
+                print('not working')
+
+@app.route('/user/', methods= ['GET', 'POST'])
+def display_user():
+    ''' This method displays the user's profile information
+    and what they are interested in'''
+    conn = dbi.connect()
+    uid = session.get('uid','')
+    if uid == '':
+        flash("you haven't log in yet")
+        return redirect (url_for('home'))
+    #src = url_for('pic',uid=uid)
+    if request.method == "GET":
+        user_posted = sibconn.find_user_posts(conn, uid)
+        post_pids = sibconn.find_interested_posts(conn,uid)
+        user_interested = []
+        for pid in post_pids:
+            pid = pid.get('pid')
+            user_interested.append(sibconn.get_specific_post(conn,pid))
+        user = sibconn.get_user_info(conn,uid)
+        print('user', user)
+        return render_template('profile_page.html', user = user, 
+            user_posted = user_posted, user_interested=user_interested, src= url_for('pic',conn=conn,uid=uid))
+
+@app.route('/search/', methods=['GET'])
+def search():
+    '''allows users to search the website'''
+    conn = dbi.connect()
+    if request.method == 'GET':
+        phrase = request.args['search a post']
+        post_pids = sibconn.search_post(conn,phrase)
+        all_posts = []
+        for pid in post_pids:
+            pid = pid.get('pid')
+            all_posts.append(sibconn.get_specific_post(conn,pid))
+        return render_template('search.html',phrase = phrase, all_posts = all_posts)
+
+@app.route('/user/update/',methods=["GET","POST"])
+def update_profile():
+    '''updates the profile after user changes something'''
+    conn = dbi.connect()
+    uid = session.get('uid')
+    user = sibconn.get_user_info(conn,uid)
+    src = url_for('pic',conn=conn,uid=uid)
+    print("/user/update/")
+    print(user)
+    if request.method == "GET":
+        #add a picture variable
+        return render_template('update-profile.html', user = user, src= src)
+    elif request.method == "POST":
+        user = request.form
+        print("/user/update/POST")
+        print(user.get('email'))
+        sibconn.update_profile(conn, uid, user=user)
+        src = sibconn.upload(conn,request)
+        return redirect(url_for("display_user"))
+
+@app.route('/pic/<uid>/')
+def pic(conn,uid):
+    '''Selects the profile picture '''
+    curs = dbi.dict_cursor(conn)
+    numrows = curs.execute(
+        '''select filename from picfile where uid = %s''',
+        [uid])
+    if numrows == 0:
+        flash('No picture for {}'.format(uid))
+        return redirect(url_for('index'))
+    row = curs.fetchone()
+    return send_from_directory(app.config['UPLOADS'],row['filename'])
+
+@app.route('/all_posts/<sort>/', methods=['GET', 'POST'])
+def all_posts(sort):
+    '''displays all the posts'''
+    conn = dbi.connect()
+    uid = session.get('uid')
+    if request.method == 'GET':
+        if sort == 'everything':
+            all_posts = sibconn.get_all_posts(conn)
+            return render_template('all_posts.html', category = 'all', all_posts=all_posts)
+        else:
+            all_posts = sibconn.sort_by_type(conn, sort)
+            return render_template('all_posts.html', category=category, 
+            all_posts=all_posts) 
+
+
+#use to make the database run
+@app.before_first_request
+def init_db():
+    dbi.cache_cnf()
+    # set this local variable to 'wmdb' or your personal or team db
+    db_to_use = 'sibconn_db' 
+    dbi.use(db_to_use)
+    print('will connect to {}'.format(db_to_use))
+
+if __name__ == '__main__':
+    import sys, os
+    if len(sys.argv) > 1:
+        # arg, if any, is the desired port number
+        port = int(sys.argv[1])
+        assert(port>1024)
+    else:
+        port = os.getuid()
+    app.debug = True
+    app.run('0.0.0.0',port)
+#Authors: SibConnect- Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino
+#Date: 11/17/2022
+
+import cs304dbi as dbi
+
+# ==========================================================
+# The functions that do most of the work.
+
+from flask import (flash, session, request, url_for)
+from werkzeug.utils import secure_filename
+import os
+from app import app
+
+def create_profile(conn, email, first, last, hashed, pronouns, class_year, interests):
+    '''
+    This method creates a user profile and stores the password for a new user
+    '''
+    curs = dbi.dict_cursor(conn)
+    try: 
+        sql = '''insert into user (uid, email, first_name, last_name, hashed, pronouns, class_year, interests)
+                values (%s, %s, %s, %s, %s, %s, %s, %s);'''
+        curs.execute(sql, [None, email, first, last, hashed, pronouns, class_year, interests])
+        conn.commit()
+    except Exception as err:
+        print('something went wrong', repr(err))
+
+def login(conn, email):
+    '''
+    This methods checks user email and password and log them in
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''SELECT uid,hashed,first_name
+                    FROM user
+                    WHERE email = %s''',
+                 [email])
+    return curs.fetchone()
+
+def new_seeking(category, description, title, conn,uid):
+    '''
+    This method inserts a seeking post into the post database
+    @param the tt, title, release date of the movie, connector for the database
+    '''
+    curs = dbi.dict_cursor(conn)
+    sql = '''insert into post(pid, uid, title, type, category,description) 
+    values (%s, %s, %s, 'seeking_post', %s, %s);'''
+    curs.execute(sql, [None, uid, title, category, description])
+    conn.commit()
+
+def new_event(category, title, desc, location, date, length, recurring, capacity, skill, conn, uid):
+    '''
+    This method inserts an event post into the post database
+    @param category, title, desc, location, date, length, recurring, capacity, skill, uid, conn
+    '''
+    curs = dbi.dict_cursor(conn)
+    sql = '''
+    insert into post(
+        pid, uid, type, title, category, location, date_time, length, 
+        recurring, capacity, skill, description)
+    values (%s, %s, 'event_post', %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
+    curs.execute(sql, [None, uid, title, category, 
+    location, date, length, recurring, capacity, skill, desc])
+    conn.commit()
+
+def get_categories(conn):
+    '''This method selects all the categories 
+    '''
+    curs = dbi.dict_cursor(conn)
+    sql =  '''select cid, name from category'''
+    curs.execute(sql)
+    return curs.fetchall()
+
+def get_posts(conn, category):
+    ''' This method gets all of the posts within a category'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where category = 
+    (select cid from category where name = %s)'''
+    curs.execute(sql,[category])
+    return curs.fetchall()
+
+def get_specific_post(conn, pid):
+    '''This method gets the details for a specific post'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where pid= %s'''
+    curs.execute(sql,[pid])
+    return curs.fetchone()
+
+def get_category(conn, name):
+    ''' This method gets the cid for a given name of category'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select cid from category where name= %s'''
+    curs.execute(sql,[name])
+    return curs.fetchone()
+
+def get_category_name(conn,cid):
+    ''' This method gets the category name based on the cid'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select name from category where cid= %s'''
+    curs.execute(sql,[cid])
+    return curs.fetchone()    
+
+def get_last_pid(conn):
+    '''This method gets the most recent post'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select last_insert_id()'''
+    curs.execute(sql)
+    return curs.fetchone()
+
+def sort_recent_post(conn, category, ptype,sorto):
+    '''This method sorts event posts from earliest to 
+    latest or latest to earliest'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where category = (select cid from category where name = %s) and 
+    type = %s
+    order by %s'''
+    curs.execute(sql, [category, ptype, sorto])
+    return curs.fetchall()
+
+def find_user_posts(conn,uid):
+    '''This method finds all posts that the user
+    has created'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select * from post where uid =%s'''
+    curs.execute(sql,[uid])
+    return curs.fetchall()
+
+def find_interested_posts(conn, uid):
+    '''This method finds all posts that the user is interested in'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid from interested where uid = %s'''
+    curs.execute(sql,[uid])
+    return curs.fetchall()
+
+def get_user_info(conn, uid):
+    '''This method finds the name of a uid'''
+    curs= dbi.dict_cursor(conn)
+    sql = '''select first_name, last_name, email, pronouns, class_year, 
+    interests, dorm from user where uid = %s'''
+    curs.execute(sql,[uid])
+    return curs.fetchone()
+
+def get_uid(conn,email):
+    '''This method finds the uid of a user
+    based on their email'''
+    curs= dbi.dict_cursor(conn)
+    sql = '''select uid from user where email = %s'''
+    curs.execute(sql,[email])
+    return curs.fetchone()
+
+def search_post(conn, phrase):
+    ''' This method allows users to search
+    must have direct words'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid from post where title like %s or 
+    description like %s'''
+    curs.execute(sql, ['%' + phrase + '%', '%' + phrase + '%'])
+    info = curs.fetchall()
+    return info
+
+def get_last_uid(conn):
+    ''' Gets the last inserted uid'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select last_insert_id()'''
+    curs.execute(sql)
+    row = curs.fetchone()
+    return row[0]
+
+def update_profile(conn,uid, user):
+    '''Updates the Profile with New Information '''
+    curs = dbi.dict_cursor(conn)
+    sql = '''update user set email=%s, first_name= %s, 
+    last_name= %s, pronouns= %s, class_year= %s, interests= %s, dorm=%s
+    where uid=%s'''
+    curs.execute(sql, [user.get('email'), 
+                      user.get('first_name'), 
+                      user.get('last_name'), 
+                      user.get('pronouns'), 
+                      user.get('class_year'),
+                      user.get('interests'),
+                      user.get('dorm'),
+                      uid])
+    conn.commit()
+
+
+def upload(conn, request):
+    ''' Uploads a profile photo'''
+    try:
+        uid = int(session.get('uid')) # may throw error
+        print(uid)
+        f = request.files['pic']
+        user_filename = f.filename
+        ext = user_filename.split('.')[-1]
+        filename = secure_filename('{}.{}'.format(uid,ext))
+        pathname = os.path.join(app.config['UPLOADS'],filename)
+        print('pathname',pathname)
+        f.save(pathname)
+        curs = dbi.dict_cursor(conn)
+        curs.execute(
+            '''insert into picfile(uid,filename) values (%s,%s)
+                on duplicate key update filename = %s''',
+            [uid, filename, filename])
+        conn.commit()
+        flash('Upload successful')
+        src = url_for('pic',conn=conn,uid=uid)
+        return src
+    except Exception as err:
+        flash('Upload failed {why}'.format(why=err))
+
+
+def add_interested(conn, uid,pid):
+    ''' adds the user and the pid to the interested table'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''insert into interested(uid,pid) 
+    values (%s, %s)'''
+    curs.execute(sql,[uid,pid])
+    conn.commit()
+
+def check_interested(conn,uid,pid):
+    '''checks if the user and pid are already in the
+    interested table'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select uid,pid from interested
+    where uid = %s and pid = %s'''
+    curs.execute(sql,[uid,pid])
+    return curs.fetchone()
+
+def delete_interested(conn,uid,pid):
+    '''deletes a user, pid from interested table'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''delete from interested where uid = %s and pid = %s'''
+    curs.execute(sql,[uid,pid])
+    conn.commit()
+    
+def create_comment(conn,pid,uid,commenttext):
+    '''Inserts new comment into comment database'''
+    curs = dbi.cursor(conn)
+    curs.execute('''insert into comment (commentid,pid,uid,commenttext) values (%s,%s,%s,%s)'''
+                 , [None,pid,uid,commenttext])
+    conn.commit() 
+    
+def grab_comments(conn,pid):
+    '''Finds all comments for a post'''
+    curs = dbi.dict_cursor(conn)
+    sql = ''' select comment.commenttext, user.first_name, user.last_name
+    from comment inner join user using (uid)
+    where pid = %s;'''
+    curs.execute(sql,[pid])
+    return curs.fetchall()
+
+def sort_by_dorm(conn,dorm, category):
+    '''Displays all the events happening in a dorm'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location, 
+    date_time, length, recurring, capacity, skill, description
+    from post where location = %s and type = 'event_post' and 
+    category = (select cid from category where name = %s)'''
+    curs.execute(sql,[dorm,category])
+    return curs.fetchall()
+
+def sort_by_recurring(conn,num, category):
+    '''Displays either recurring or not'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location,
+    date_time, length, recurring, capacity, skill, description
+    from post where recurring = %s and type='event_post' and 
+    category = (select cid from category where name = %s)'''
+    curs.execute(sql,[num,category])
+    return curs.fetchall()
+
+def get_all_posts(conn):
+    '''retrieves all posts'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location,
+    date_time, length, recurring, capacity, skill, description
+    from post 
+    order by pid desc'''
+    curs.execute(sql)
+    return curs.fetchall()
+
+def sort_by_type(conn, sort):
+    '''sorts the posts by seeking or event post'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select pid, uid, type, title, category, location,
+    date_time, length, recurring, capacity, skill, description
+    from post where type = %s'''
+    curs.execute(sql,[sort])
+    return curs.fetchall()
+
+if __name__ == '__main__':
+    dbi.cache_cnf()   # defaults to ~/.my.cnf
+    dbi.use('sibconn_db')
+    conn = dbi.connect(){% extends "base.html" %}
+{% block main %}
+<h1>All Posts</h1>
+
+<form action="#" method="POST">
+    <label> Filter by Event Type:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('all_posts', sort='event_post')}}">Event Posts</option>
+    <option value="{{url_for('all_posts', sort='seeking_post')}}" >Seeking Posts</option>
+    </select>
+    </form>
+
+
+<div id="posts">
+    {% for post in all_posts %}
+    <h3><a href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a> </h3>
+    <h4>Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+
+<!---Authors: Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino-->
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <!-- for mobile-friendly pages -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino" content="">
+    <title>SibConnect</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+{% block nav %}
+<div class = "topnav">
+      <!--<a class="active" href="{{url_for('home')}}">Home</a> -->
+      <a href="{{url_for('home')}}">SibConnect</a>
+      <div class="search-box">
+        <form action= "{{url_for('search')}}" method='get'>
+          <label>search<input type= "text" name="search a post" size="30" 
+            maxlength="60" placeholder="Search posts" required></label>
+          <input class = search_btn type= 'submit' value= 'Submit'>
+        </form>
+      </div>
+      <div class="topnav-right">
+        <!-- flex not working for some reason -->
+        <a href="{{url_for('create_profile')}}">Create Profile</a>
+        <a href="{{url_for('login')}}">Log In</a>
+      </div>
+</div>
+{% endblock %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div id="messages">
+  {% for msg in messages %}
+  <p>{{msg}}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main>
+{% block main %}
+{% endblock %}
+</main>
+<!---Authors: Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino-->
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <!-- for mobile-friendly pages -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Amanda Cheung, Bethany Costello, Rita Lyu, Dominique Nino" content="">
+    <title>SibConnect</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+</head>
+<body>
+<!-- database is  -->
+{% block nav %}
+<div class = "topnav">
+      <!--<a class="active" href="{{url_for('home')}}">Home</a> -->
+      <a href="{{url_for('home')}}">Home</a>
+      <a href="{{url_for('all_posts', sort='everything')}}">All Posts</a>
+      <a href="{{url_for('seeking')}}">Seeking events to participate in</a>
+      <a href="{{url_for('event')}}">Create/ pub your event </a>
+      <div class="search-box">
+        <form action= "{{url_for('search')}}" method='get'>
+          <label><input type= "text" name="search a post" size="30" 
+            maxlength="60" placeholder="Search posts" required></label>
+          <input type= 'submit' value= 'Submit'>
+        </form>
+      </div>
+      <!-- drop down nav bar -->
+      <div class="dropdown">
+        <button class="dropbtn">Profile</button>
+        <div class="dropdown-content">
+            <a href="{{url_for('display_user')}}">View Profile</a>
+            <a href="{{url_for('logout')}}">Log Out</a>
+        </div>
+      </div>
+</div>
+{% endblock %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div id="messages">
+  {% for msg in messages %}
+  <p>{{msg}}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+
+<!-- is home page is with categories but base is just the nav bar-->
+
+{% block main %}
+
+{% endblock %}
+
+{% extends "base.html" %}
+{% block main %}
+<div class="profile_div">
+  <h1>Create profile</h1>
+  <p class="intro"> <em>Please put your preference in this form below</em></p>
+
+
+  <form id="create-profile-form"
+      method="post"
+      action="{{url_for('create_profile')}}">
+
+  <p><label>Email:
+    <input required name="email">
+  </label></p>
+
+  <p><label>First name:
+    <input required type="text" name="first_name" size="50"></label></p>
+
+  <p><label>Last name:
+    <input required type="text" name="last_name" size="50"></label></p>
+
+  <p><label>Password:
+      <input required type="text" name="password"></label></p>
+
+  <p><label>Pronouns:
+    <input required type="text" name="pronouns">
+  </label></p>
+
+  <p><label>Interests:
+    <input required type="text" name="interests">
+  </label></p>
+
+  <p><label>Class Year:
+      <select required name="class_year">
+          <option value="">choose</option>
+          <option>2026</option>
+          <option>2025</option>
+          <option>2024</option>
+          <option>2023</option>
+          <option>Alum</option>
+      </select>
+  </label></p>
+
+  <p><input class = profile_btn type="submit" value="Create Profile">
+
+  </form>
+
+</div>
+{% endblock %}{% extends "base_login.html" %}
+{% block main %}
+<h1>EVENT: {{post.title}}</h1>
+
+<form action="{{url_for('display_post',pid=post.pid)}}" method="POST">
+    <button type="submit" name="submit" value={{interested}}>{{interested}}</button>
+</form>
+
+<div id="{{post.pid}}">
+    <h3>
+    Description: {{post.description}}<br>
+    Location: {{post.location}} <br>
+    Category: {{category.name}} <br>
+    When: {{post.date_time}} <br>
+    Length: {{post.length}} minutes<br>
+    Recurring? {{post.recurring}} <br>
+    Capacity Limit: {{post.capacity}} <br>
+    Skill Level: {{post.skill}}
+    </h3>
+</div>
+<h3> Comments: </h3>
+{% for comment in comments %}
+    <p> {{comment.first_name}} {{comment.last_name}} says: 
+         {{comment.commenttext}} </p>
+{% endfor %}
+<form action="" method="POST">
+    <p><label> Post a comment: <br>
+            <textarea required name= "commenttext" rows="5" cols="30"></textarea>
+    </label></p>
+    <p><input type= "submit" name= "submit" value= "comment"></p>
+</form>
+
+
+{% endblock %}
+{% extends "base_login.html" %}
+{% block main %}
+<h1>LOOKING FOR: {{post.title}}</h1>
+
+<div id="{{post.pid}}">
+    <h3>
+    Description: {{post.description}} <br>
+    Category: {{category.name}} <br>
+    </h3>
+</div>
+
+<h3> Comments: </h3>
+{% for comment in comments %}
+    <p> {{comment.first_name}} {{comment.last_name}} says: 
+         {{comment.commenttext}} </p>
+{% endfor %}
+<form action="" method="POST">
+    <p><label> Post a comment: <br>
+            <textarea required name= "commenttext" rows="5" cols="30"></textarea>
+    </label></p>
+    <p><input type= "submit" name= "submit" value="comment"></p>
+</form>
+
+{% endblock %}
+{% extends "base_login.html" %}
+
+
+{% block main %}
+<div class = "outer_wrapper">
+    <div class = "wrapper">
+        <p class = "title">Pub your event!</p>
+        <!---This is the form to fill out if something wants to be posted-->
+        <form method="post" action="{{url_for('event')}}">
+            <div class = "input_field">
+                <label for="event_title"> Title: </label>
+                <input type="text" class = "input" id="event_title"
+                required name='title' rows="5" cols="50">
+            </div>
+            <div class = "input_field">
+                <label for="event_category">Category:</label>
+                <select name = 'category-list' class = custom_select id="event_category"> 
+                        <option value='none'>Choose One</option>
+                        {% for category in categories %}
+                        <option value="{{category['name']}}">
+                            {{category['name']}}
+                        </option>
+                        {% endfor %}
+                </select>
+            </div>
+            <div class = "input_field">
+                <label for="event_desc"> Description (add the specific location in the description): </label>
+                <textarea required name="description" id = "event_desc"
+                class = textarea rows="5" cols="30"></textarea>
+            </div>
+            <div class = "input_field">
+                <label for="event_location"> Location: </label>
+                <div id="event_location" class=radio_btn>
+                    <labeL><input type="radio" id="quint" name="location" 
+                        value="Quint/ West Side"> Quint/ West Side <br></label>
+                    <label><input type="radio" id="tower" name="location" 
+                        value="Tower Court"> Tower Court <br></label>
+                    <label><input type="radio" id="new_dorms" name="location" 
+                        value="New Dorms"> New Dorms <br></label>
+                    <label><input type="radio" id="stoned" name="location" 
+                        value="Stone Davis"> Stone Davis <br></label>
+                    <label><input type="radio" id="branch" name="location" 
+                        value="Branch (Lake House etc)"> Branch (Lake House etc)<br></label>
+                    <label><input type="radio" id="none" name="location" 
+                        value="n/a"> n/a</label>
+                </div>   
+            </div>
+            <div class = "input_field">
+                <label for="form_time"> Date/Time: </label>
+                <input id="form_time" required type='datetime-local' 
+                class = input name='date_time' rows="5" cols="30">
+            </div>
+            <div class = "input_field">
+                <label for="form_length"> Length (in minutes):</label>
+                <input id="form_length" type="text" class = input 
+                required name='length' rows="5" cols="30"> 
+            </div>
+            <div class = "input_field">
+                <label  for="event_recur"> Recurring: </label>
+                <div id="event_recur" class=radio_btn>
+                    <label><input type="radio" name="recurring" value="Yes">Yes </label>
+                    <label><input type="radio" name="recurring" value="No">No </label>
+                </div>
+            </div>
+            <div class = "input_field">
+                <label for="event_capacity"> Capacity: </label>
+                <input id="event_capacity" type="text" class = input 
+                required name=capacity rows="5" cols="30">
+            </div>
+            <div class = "input_field">
+                <label>Skill Level (1- beginner 5- expert): </label>
+                <select name = 'skill' class = custom_select> 
+                    <option value='none'>Choose One</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div class = "input_field">
+                <input type= 'submit' class = 'event_btn' name= 'submit' value='Post Event'>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}{% extends "base.html" %}
+{% block main %}
+
+<div class = Menu>
+  <form action="{{url_for('category', category='Arts & Crafts', sort='mostrecent')}}">
+    <button id = cat_1 type="submit">Arts & Crafts</button>
+  </form>
+  <form action="{{url_for('category', category='Music', sort='mostrecent')}}">
+    <button id = cat_2 type="submit">Music</button>
+  </form>
+  <form action="{{url_for('category', category='Movies & Shows', sort='mostrecent')}}">
+    <button id = cat_3 type="submit">Movies & Shows</button>
+  </form>
+  <form action="{{url_for('category', category='Language & Culture', sort='mostrecent')}}">
+    <button id = cat_4 type="submit">Language & Culture</button>
+  </form>
+  <form action="{{url_for('category', category='Sports & Outdoor', sort='mostrecent')}}">
+    <button id = cat_5 type="submit">Sports & Outdoor</button>
+  </form>
+  <form action="{{url_for('category', category='Other', sort='mostrecent')}}">
+    <button id = cat_6 type="submit">Other</button>
+  </form>
+</div>
+
+
+{% endblock %}
+{% extends "base.html" %}
+{% block main %}
+<div class="profile_div">
+  <h1>Login</h1>
+
+  <p class="intro"> <em>Please log in using your email and password</em></p>
+
+  <form id="login-form"
+      method="post"
+      action="{{url_for('login')}}">
+
+  <p><label>Email:
+    <textarea required name="email" rows="1" cols="30"></textarea>
+  </label></p>
+
+  <p><label>Password:
+    <input required type="text" name="password"></label></p>
+
+  <p><input class = profile_btn type="submit" value="Login"></p>
+
+  </form>
+</div>
+{% endblock %}
+{% extends "base.html" %}
+{% block main %}
+<h1>Posts for {{category}}</h1>
+
+<form action="#" method="POST">
+<label> Sort by</label>
+<select onChange="window.location.href=this.value"> 
+<option value="value" selected>Sort By</option>
+<option value="{{url_for('category', category=category, sort='leastrecent')}}">Least to Most Recent</option>
+<option value="{{url_for('category', category=category, sort='mostrecent')}}" >Most to Least Recent</option>
+<option value="{{url_for('category', category=category, sort='lowskill')}}" >Low to High Skill Level</option>
+<option value="{{url_for('category', category=category, sort='highskill')}}">High to Low Skill Level</option>
+<option value="{{url_for('category', category=category, sort='recurring')}}">Recurring</option>
+<option value="{{url_for('category', category=category, sort='soon')}}">Coming Up Soon</option>
+</select>
+</form>
+
+<form action="#" method="POST">
+    <label> Filter by Dorm:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=category, sort='West Side')}}">Quint/West Side</option>
+    <option value="{{url_for('category', category=category, sort='Tower Court')}}" >Tower Court</option>
+    <option value="{{url_for('category', category=category, sort='New Dorms')}}" >New Dorms</option>
+    <option value="{{url_for('category', category=category, sort='Stone Davis')}}">Stone Davis</option>
+    <option value="{{url_for('category', category=category, sort='Branch (Lake House etc)')}}">Branch (Lake House etc)/option>
+    </select>
+    </form>
+
+<form action="#" method="POST">
+    <label> Filter by Recurring:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=category, sort='1')}}">Recurring</option>
+    <option value="{{url_for('category', category=category, sort='0')}}" >Not Recurring</option>
+    </select>
+    </form>
+
+<form action="#" method="POST">
+    <label> Filter by Event Type:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=all, sort='event_post')}}">Event Posts</option>
+    <option value="{{url_for('category', category=all, sort='seeking_post')}}" >Seeking Posts</option>
+    </select>
+    </form>
+</form>
+<div id="posts">
+    {% for post in all_posts %}
+    <h3><a value="{{post.title}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4>Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+
+{% extends "base_login.html" %}
+{% block main %}
+<h1>Hello, {{user.first_name}} {{user.last_name}}</h1>
+
+<div id="user_info">
+    <p> <img src="{{src}}" alt = 'Profile pic for {{user.first_name}} {{user.last_name}}'></p>
+    Email: {{user.email}} <br>
+    Pronouns: {{user.pronouns}}<br>
+    Class Year: {{user.class_year}}<br>
+    Interest: {{user.interests}}<br>
+    Dorm: {{user.dorm}}
+</div>
+
+<!-- change this to look better -->
+<form action="{{url_for('update_profile')}}">
+    <button type="submit">Edit profile</button>
+</form>
+
+<div id="user_posted">
+    <h2>You Posted:</h2>
+    {% for post in user_posted %}
+    <h3><a href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4>Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+<div id="user_interested">
+    <h2>You're Interested In:</h2>
+    {% for post1 in user_interested %}
+    <h3><a href="{{url_for('display_post',pid=post1.pid)}}">{{post1.title}}</a></h3>
+    <h4> Description: {{post1.description}}</h4>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
+{% extends "base.html" %}
+{% block main %}
+<h1>Search Results for: {{phrase}}</h1>
+
+<div id="posts">
+    {% for post in all_posts %}
+    <h3><a href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4> Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+
+{% extends "base_login.html" %}
+
+
+{% block main %}
+
+
+
+<!---javascript that display a text box if user select other-->
+<!-- <script type="text/javascript">
+    function showfield(name){
+      if(name=='Other')document.getElementById(
+        'optional_textbox'
+        ).innerHTML='Other: <input type="text" name="other" />';
+      else document.getElementById('optional_textbox').innerHTML='';
+    }
+</script> -->
+
+<!---This is the form to fill out if something wants to be posted-->
+<div class = "outer_wrapper">
+  <div class = "wrapper">
+    <p class = "title">Seeking events to participate in</p>
+      <!---This is the form to fill out if user is seeking things to do with people-->
+    <form method="post" action="{{url_for('seeking')}}">
+      <div class = "input_field">
+        <label for="seek_title"> Title: </label>
+        <input type="text" class = "input" id="seek_title"
+        required name='title' rows="5" cols="50">
+    </div>
+    <div class = "input_field">
+      <label for="seek_category">Category:</label>
+      <select name = 'category-list' class = custom_select id="seek_category"> 
+              <option value='none'>Choose One</option>
+              {% for category in categories %}
+              <option value="{{category['name']}}">
+                  {{category['name']}}
+              </option>
+              {% endfor %}
+      </select>
+    </div>
+    <div class = "input_field">
+      <label for="seek_desc"> Description (add the specific location in the description): </label>
+      <textarea required name="description" id = "seek_desc"
+      class = textarea rows="5" cols="30"></textarea>
+    </div>
+    <div class = "input_field">
+      <input type= 'submit' class = 'event_btn' name= 'submit' value='Seek Event'>
+    </div>
+  </form>
+{% endblock %}{% extends "base_login.html" %}
+{% block main %}
+<h1>Update your profile</h1>
+<p class="intro"> <em>Please update your profile information in the form below</em></p>
+
+<form id="Update profile here"
+    method="POST"
+    action="{{url_for('update_profile')}}"
+    enctype="multipart/form-data">
+    
+<p><label>Email:
+  <input name="email" rows="1" cols="50" value={{user.email}}></input>
+</label></p>
+
+<p><label>First name:
+  <input required type="text" name="first_name" size="50" value={{user.first_name}}></label></p>
+
+<p><label>Last name:
+  <input required type="text" name="last_name" size="50" value={{user.last_name}}></label></p>
+
+<p><label>Pronouns:
+  <input required type="text" name="pronouns" rows="1" cols="50" value ={{user.pronouns}}></input>
+</label></p>
+
+<p><label>Interests:
+  <input required type="text" name="interests" rows="1" cols="50" value={{user.interests}}></input>
+</label></p>
+
+<p><label>Dorm:
+  <input required name="dorm" rows="1" cols="50" value={{user.dorm}}></input>
+</label></p>
+
+<p><label>Class Year:
+    <select required name="class_year">
+        <option value={{user.class_year}}>choose</option>
+        <option>2026</option>
+        <option>2025</option>
+        <option>2024</option>
+        <option>2023</option>
+        <option>Alum</option>
+    </select>
+</label></p>
+
+<p><label>Pic: <input type="file" name="pic"></label></p>
+
+<p><input type="submit" value="Update Profile">
+
+</form>
+{% if uid != '' and src != '' %}
+<p>Last upload: {{uid}}</p>
+<p> <img src="{{src}}"></p>
+{% endif %}
+{% endblock %}
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap');
+
+
+*{
+ font-family:'Montserrat', sans-serif;
+
+}
+
+/* Add a black background color to the top navigation */
+.topnav {
+  display: flex;
+  background-color: #fec00723;
+  overflow: hidden;
+  flex-flow: row wrap;
+  transition-duration: 0.4s;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  border-radius: 18px;
+  margin-right: 20px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover, .dropdown:hover .dropbtn {
+  background-color: white;
+  color: orangered;
+  /* border: 1px solid #fec107; */
+}
+
+/* Add a color to the active/current link */
+/* How to dymatically change the class to active? */
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+/* Right-aligned section inside the top navigation */
+.topnav-right {
+  display: flex;
+}
+
+/* The dropdown container */
+.dropdown {
+  float: left;
+  overflow: hidden;
+}
+
+/* Dropdown button */
+.dropdown .dropbtn {
+  font-size: 16px;
+  border: none;
+  outline: none;
+  color: Black;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit; /* Important for vertical align on mobile phones */
+  margin: 0; /* Important for vertical align on mobile phones */
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 16px 8px 16px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+/* Add a grey background color to dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* style for nav bar search box */
+.search-box {
+  padding: 14px 16px;
+  margin-right: 20px;
+}
+
+
+/* style for menu buttons on home page! */
+.Menu{
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  margin-top: 200px;
+  margin-left: 500px;
+  margin-right: 500px;
+  flex-basis: 200px;
+}
+
+.Menu button{
+  background-color: #fec107; /* theme color*/
+  border: none;
+  color: black;
+  padding: 40px 40px;
+  margin: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  width: 200px;
+  height: 150px; 
+  border-radius: 15px;
+  transition-duration: 0.4s;
+  cursor:pointer;
+}
+
+/* Change the color of buttons on hover */
+.Menu button:hover {
+  background-color: white;
+  color: #fea307;
+  border: 2px solid #fec107;
+  font-size: 25px;
+}
+
+/* CSS for event pubbing form */
+/* .outer_wrapper{
+  background:#fec107;
+} */
+
+.wrapper{
+  max-width: 800px;
+  width:600px;
+  background-color: #fff;
+  margin: 20px auto;
+  padding: 30px;
+  padding-top: 10px;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.125);
+  border: 1.5px solid #fec107;
+  border-radius: 15px;
+}
+
+.wrapper .title{
+  font-size:28px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: orangered;
+  text-align: center;
+  
+}
+
+.wrapper form{
+  width: 100%;
+}
+
+.wrapper form .input_field{
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.wrapper form .input_field label{
+  width: 400px;
+  color: black;
+  margin-right: 10px;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.wrapper form .input_field .input,
+.wrapper form .input_field .textarea,
+.wrapper form .input_field .custom_select{
+  width: 100%;
+  outline:None;
+  border: 1px solid #d5dbd9;
+  font-size: 14px;
+  padding: 6px 6px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.wrapper form .input_field .textarea{
+  resize:none;
+  height:125px;
+}
+ 
+.wrapper form .input_field .radio_btn{
+  float: right;
+}
+
+
+/* .wrapper form .input_field .custom_select{
+  position: relative;
+  width: 20%;
+  height: 30px;
+} */
+
+.wrapper form .input_field .event_btn{
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 15px;
+  border:0;
+  background: #fec107;
+  color: black;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.wrapper form .input_field .event_btn:hover{
+  background: #fe8f07;
+}
+
+/* end of event-form css */
+
+/* style for login form */
+.profile_div{
+  text-align: center;
+  color: orangered;
+  font-weight: bolder;
+}
+
+.intro {
+  text-align: center;
+  color: black ;
+}
+
+#login-form{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  color: black;
+  font-weight: 800;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.125);
+  border: 1.5px solid #fec107;
+  border-radius: 15px;
+  width: 400px;
+}
+
+.profile_btn{
+  height: 40px;
+  border: 1px solid;
+  background: white;
+  font-size: 18px;
+  color:black;
+}
+
+/* style for create profile form */
+
+#create-profile-form{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  color: black;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.125);
+  border: 1.5px solid #fec107;
+  border-radius: 15px;
+  width: 400px;
+}

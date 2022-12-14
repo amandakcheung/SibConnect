@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Posts for {{category}}</h1>
+
+<form action="#" method="POST">
+<label> Sort by</label>
+<select onChange="window.location.href=this.value"> 
+<option value="value" selected>Sort By</option>
+<option value="{{url_for('category', category=category, sort='leastrecent')}}">Least to Most Recent</option>
+<option value="{{url_for('category', category=category, sort='mostrecent')}}" >Most to Least Recent</option>
+<option value="{{url_for('category', category=category, sort='lowskill')}}" >Low to High Skill Level</option>
+<option value="{{url_for('category', category=category, sort='highskill')}}">High to Low Skill Level</option>
+<option value="{{url_for('category', category=category, sort='recurring')}}">Recurring</option>
+<option value="{{url_for('category', category=category, sort='soon')}}">Coming Up Soon</option>
+</select>
+</form>
+
+<form action="#" method="POST">
+    <label> Filter by Dorm:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=category, sort='West Side')}}">Quint/West Side</option>
+    <option value="{{url_for('category', category=category, sort='Tower Court')}}" >Tower Court</option>
+    <option value="{{url_for('category', category=category, sort='New Dorms')}}" >New Dorms</option>
+    <option value="{{url_for('category', category=category, sort='Stone Davis')}}">Stone Davis</option>
+    <option value="{{url_for('category', category=category, sort='Branch (Lake House etc)')}}">Branch (Lake House etc)/option>
+    </select>
+    </form>
+
+<form action="#" method="POST">
+    <label> Filter by Recurring:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=category, sort='1')}}">Recurring</option>
+    <option value="{{url_for('category', category=category, sort='0')}}" >Not Recurring</option>
+    </select>
+    </form>
+
+<form action="#" method="POST">
+    <label> Filter by Event Type:</label>
+    <select onChange="window.location.href=this.value"> 
+    <option value="value" selected>Filter By</option>
+    <option value="{{url_for('category', category=all, sort='event_post')}}">Event Posts</option>
+    <option value="{{url_for('category', category=all, sort='seeking_post')}}" >Seeking Posts</option>
+    </select>
+    </form>
+</form>
+<div id="posts">
+    {% for post in all_posts %}
+    <h3><a value="{{post.title}}" href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4>Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+

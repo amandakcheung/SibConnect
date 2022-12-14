@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="profile_div">
+  <h1>Login</h1>
+
+  <p class="intro"> <em>Please log in using your email and password</em></p>
+
+  <form id="login-form"
+      method="post"
+      action="{{url_for('login')}}">
+
+  <p><label>Email:
+    <textarea required name="email" rows="1" cols="30"></textarea>
+  </label></p>
+
+  <p><label>Password:
+    <input required type="text" name="password"></label></p>
+
+  <p><input class = profile_btn type="submit" value="Login"></p>
+
+  </form>
+</div>
+{% endblock %}

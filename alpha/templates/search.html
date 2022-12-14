@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block main %}
+<h1>Search Results for: {{phrase}}</h1>
+
+<div id="posts">
+    {% for post in all_posts %}
+    <h3><a href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4> Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+

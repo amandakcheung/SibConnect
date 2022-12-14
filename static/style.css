@@ -237,7 +237,7 @@
 
 .intro {
   text-align: center;
-  color: orangered;
+  color: black ;
 }
 
 #login-form{
@@ -258,7 +258,7 @@
   border: 1px solid;
   background: white;
   font-size: 18px;
-  color:orangered;
+  color:black;
 }
 
 /* style for create profile form */

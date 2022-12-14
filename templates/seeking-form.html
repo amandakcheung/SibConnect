@@ -2,38 +2,48 @@
 
 
 {% block main %}
-<p>Seeking events to participate in</p>
+
 
 
 <!---javascript that display a text box if user select other-->
-<script type="text/javascript">
+<!-- <script type="text/javascript">
     function showfield(name){
       if(name=='Other')document.getElementById(
         'optional_textbox'
         ).innerHTML='Other: <input type="text" name="other" />';
       else document.getElementById('optional_textbox').innerHTML='';
     }
-</script>
+</script> -->
 
 <!---This is the form to fill out if something wants to be posted-->
-<form method="post" action="{{url_for('seeking')}}">
-    <p><label> Title:
-    <input type="text" required name='title' rows="5" cols="30">
-    </label></p>
-    <p><label>Category:
-            <select name = 'category-list'> 
-            <option value='none'>Choose One</option>
-            {% for category in categories %}
-            <option value="{{category['name']}}">
-                {{category['name']}}
-            </option>
-            {% endfor %}
-        </select>
-        <div id="optional_textbox"></div>
-    </label></p>
-    <p><label> Description: <br>
-            <textarea required name='description' rows="5" cols="30"></textarea>
-    </label></p>
-    <p><input type= 'submit' name= 'submit' value='Seek Event'></p>
-</form>
+<div class = "outer_wrapper">
+  <div class = "wrapper">
+    <p class = "title">Seeking events to participate in</p>
+      <!---This is the form to fill out if user is seeking things to do with people-->
+    <form method="post" action="{{url_for('seeking')}}">
+      <div class = "input_field">
+        <label for="seek_title"> Title: </label>
+        <input type="text" class = "input" id="seek_title"
+        required name='title' rows="5" cols="50">
+    </div>
+    <div class = "input_field">
+      <label for="seek_category">Category:</label>
+      <select name = 'category-list' class = custom_select id="seek_category"> 
+              <option value='none'>Choose One</option>
+              {% for category in categories %}
+              <option value="{{category['name']}}">
+                  {{category['name']}}
+              </option>
+              {% endfor %}
+      </select>
+    </div>
+    <div class = "input_field">
+      <label for="seek_desc"> Description (add the specific location in the description): </label>
+      <textarea required name="description" id = "seek_desc"
+      class = textarea rows="5" cols="30"></textarea>
+    </div>
+    <div class = "input_field">
+      <input type= 'submit' class = 'event_btn' name= 'submit' value='Seek Event'>
+    </div>
+  </form>
 {% endblock %}

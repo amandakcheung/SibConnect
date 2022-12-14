@@ -8,13 +8,13 @@
         <!---This is the form to fill out if something wants to be posted-->
         <form method="post" action="{{url_for('event')}}">
             <div class = "input_field">
-                <label> Title: </label>
-                <input type="text" class = input 
+                <label for="event_title"> Title: </label>
+                <input type="text" class = "input" id="event_title"
                 required name='title' rows="5" cols="50">
             </div>
             <div class = "input_field">
-                <label>Category:</label>
-                <select name = 'category-list' class = custom_select> 
+                <label for="event_category">Category:</label>
+                <select name = 'category-list' class = custom_select id="event_category"> 
                         <option value='none'>Choose One</option>
                         {% for category in categories %}
                         <option value="{{category['name']}}">
@@ -24,15 +24,15 @@
                 </select>
             </div>
             <div class = "input_field">
-                <label> Description (add the specific location in the description): </label>
-                <textarea required name="description" 
+                <label for="event_desc"> Description (add the specific location in the description): </label>
+                <textarea required name="description" id = "event_desc"
                 class = textarea rows="5" cols="30"></textarea>
             </div>
             <div class = "input_field">
-                <label> Location: </label>
-                <div class = radio_btn>
+                <label for="event_location"> Location: </label>
+                <div id="event_location" class=radio_btn>
                     <labeL><input type="radio" id="quint" name="location" 
-                        value="Quint/ West Side"> Quint/ West Side <br></labrel>
+                        value="Quint/ West Side"> Quint/ West Side <br></label>
                     <label><input type="radio" id="tower" name="location" 
                         value="Tower Court"> Tower Court <br></label>
                     <label><input type="radio" id="new_dorms" name="location" 
@@ -46,25 +46,25 @@
                 </div>   
             </div>
             <div class = "input_field">
-                <label> Date/Time: </label>
-                <input required type='datetime-local' 
+                <label for="form_time"> Date/Time: </label>
+                <input id="form_time" required type='datetime-local' 
                 class = input name='date_time' rows="5" cols="30">
             </div>
             <div class = "input_field">
-                <label> Length (in minutes):</label>
-                <input type="text" class = input 
+                <label for="form_length"> Length (in minutes):</label>
+                <input id="form_length" type="text" class = input 
                 required name='length' rows="5" cols="30"> 
             </div>
             <div class = "input_field">
-                <label> Recurring: </label>
-                <input class = radio_btn type="radio" 
-                id="yes" name="recurring" value="Yes"> Yes
-                <input class = radio_btn type="radio" 
-                id="no" name="recurring" value="No"> No
+                <label  for="event_recur"> Recurring: </label>
+                <div id="event_recur" class=radio_btn>
+                    <label><input type="radio" name="recurring" value="Yes">Yes </label>
+                    <label><input type="radio" name="recurring" value="No">No </label>
+                </div>
             </div>
             <div class = "input_field">
-                <label> Capacity: </label>
-                <input type="text" class = input 
+                <label for="event_capacity"> Capacity: </label>
+                <input id="event_capacity" type="text" class = input 
                 required name=capacity rows="5" cols="30">
             </div>
             <div class = "input_field">
@@ -79,7 +79,7 @@
                 </select>
             </div>
             <div class = "input_field">
-                <input type= 'submit' class = 'btn' name= 'submit' value='Post Event'>
+                <input type= 'submit' class = 'event_btn' name= 'submit' value='Post Event'>
             </div>
         </form>
     </div>

@@ -1,49 +1,57 @@
 {% extends "base.html" %}
 {% block main %}
-<div class="profile_div">
-  <h1>Create profile</h1>
-  <p class="intro"> <em>Please put your preference in this form below</em></p>
-
-
+<div class="profile_div" id="profile_id_div">
+  <p class="title">Create profile</p>
+  <p class="intro"> <em>Please put your information in this form below</em></p>
   <form id="create-profile-form"
       method="post"
       action="{{url_for('create_profile')}}">
+      <div class = "input_field">
+        <label for="create_profile_email">Email: </label>
+        <input required class = input id="create_profile_email" name="email" rows="1" cols="30"></input>
+      </div>
 
-  <p><label>Email:
-    <input required name="email" rows="1" cols="50"></input>
-  </label></p>
+      <div class = "input_field">
+        <label for="create_profile_first">First Name: </label>
+        <input required type="text" class = input id="create_profile_first" name="first_name" rows="1" cols="30"></input>
+      </div>
 
-  <p><label>First name:
-    <input required type="text" name="first_name" size="50"></label></p>
+      <div class = "input_field">
+        <label for="create_profile_last">Last Name: </label>
+        <input required type="text" class = input id="create_profile_last" name="last_name" rows="1" cols="30"></input>
+      </div>
 
-  <p><label>Last name:
-    <input required type="text" name="last_name" size="50"></label></p>
+      <div class = "input_field">
+        <label for="create_profile_pwd">Password </label>
+        <input required type="text" class = input id="create_profile_pwd" name="password" rows="1" cols="30"></input>
+      </div>
 
-  <p><label>Password:
-      <input required type="text" name="password"></label></p>
+      <div class = "input_field">
+        <label for="create_profile_pronouns">Pronouns: </label>
+        <input required type="text" class = input id="create_profile_pronoun" name="pronouns" rows="1" cols="30"></input>
+      </div>
 
-  <p><label>Pronouns:
-    <input required type="text" name="pronouns" rows="1" cols="50"></input>
-  </label></p>
+      <div class = "input_field">
+        <label for="create_profile_interests">Interests: </label>
+        <input required type="text" class = input id="create_profile_interests" name="interests" rows="1" cols="30"></input>
+      </div>
 
-  <p><label>Interests:
-    <input required type="text" name="interests" rows="1" cols="50"></input>
-  </label></p>
+      <div class = "input_field">
+        <label>Class Year: </label>
+        <select required name="class_year" class = custom_select> 
+            <option value='none'>Choose One</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="Alum">Alum</option>
+        </select>
+    </div>
 
-  <p><label>Class Year:
-      <select required name="class_year">
-          <option value="">choose</option>
-          <option>2026</option>
-          <option>2025</option>
-          <option>2024</option>
-          <option>2023</option>
-          <option>Alum</option>
-      </select>
-  </label></p>
-
-  <p><input class = profile_btn type="submit" value="Create Profile">
-
+    <div class ="input_field">
+      <input class = profile_btn type="submit" value="Create Profile">
+    </div>
+    
   </form>
-
 </div>
 {% endblock %}

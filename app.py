@@ -59,6 +59,8 @@ def create_profile():
         first = info.get('first_name')
         last = info.get('last_name')
         passwd = info.get('password')
+        print("print passwd for profile creating")
+        print(passwd)
         #create hashing for password
         hashed = bcrypt.hashpw(passwd.encode('utf-8'),
                            bcrypt.gensalt())
@@ -67,16 +69,18 @@ def create_profile():
         print(passwd, type(passwd), hashed, stored)
         pronouns = info.get('pronouns')
         interests = info.get('interests')
-        class_year = info.get('class year')
+        class_year = info.get('class_year')
+        print("print class year for profile creating")
+        print(class_year)
         sibconn.create_profile(conn, email, first, last, hashed, pronouns, class_year, interests)
-        # uid = sibconn.get_last_pid(conn)
-        # uid = uid.get('last_insert_id')
-        # session['uid'] = uid
+        print("print email for profile creating")
         print(email)
         email = str(email)
         uid = sibconn.get_uid(conn,email)
         uid = uid.get('uid')
+        print("print uid for profile creating")
         print(uid)
+        session['uid'] = uid
         return redirect(url_for('display_user'))
 
 @app.route('/login/', methods=["GET", "POST"])

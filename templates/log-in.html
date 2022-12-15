@@ -1,23 +1,27 @@
 {% extends "base.html" %}
 {% block main %}
+
+
 <div class="profile_div">
-  <h1>Login</h1>
-
+  <p class="title">Login</p>
   <p class="intro"> <em>Please log in using your email and password</em></p>
-
   <form id="login-form"
       method="post"
       action="{{url_for('login')}}">
+    
+    <div class = "input_field">
+      <label for="login_email">Email: </label>
+      <input required class = input id="login_email" name="email" rows="1" cols="30"></input>
+    </div>
 
-  <p><label>Email:
-    <textarea required name="email" rows="1" cols="30"></textarea>
-  </label></p>
+    <div class = "input_field">
+      <label for="login_pwd">Password: </label>
+      <input required class = input id="login_pwd" type="text" name="password"></input>
+    </div>
 
-  <p><label>Password:
-    <input required type="text" name="password"></label></p>
-
-  <p><input class = profile_btn type="submit" value="Login"></p>
-
+    <div class = "input_field">
+      <input class = profile_btn type="submit" value="Login">
+    </div>
   </form>
 </div>
 {% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base_login.html" %}
+{% block main %}
+<h1>Hello, {{user.first_name}} {{user.last_name}}</h1>
+
+<div id="user_info">
+    <p> <img src="{{src}}" alt = 'Profile pic for {{user.first_name}} {{user.last_name}}'></p>
+    Email: {{user.email}} <br>
+    Pronouns: {{user.pronouns}}<br>
+    Class Year: {{user.class_year}}<br>
+    Interest: {{user.interests}}<br>
+    Dorm: {{user.dorm}}
+</div>
+
+<!-- change this to look better -->
+<form action="{{url_for('update_profile')}}">
+    <button type="submit">Edit profile</button>
+</form>
+
+<div id="user_posted">
+    <h2>You Posted:</h2>
+    {% for post in user_posted %}
+    <h3><a href="{{url_for('display_post',pid=post.pid)}}">{{post.title}}</a></h3>
+    <h4>Description: {{post.description}}</h4>
+    {% endfor %}
+</div>
+
+<div id="user_interested">
+    <h2>You're Interested In:</h2>
+    {% for post1 in user_interested %}
+    <h3><a href="{{url_for('display_post',pid=post1.pid)}}">{{post1.title}}</a></h3>
+    <h4> Description: {{post1.description}}</h4>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

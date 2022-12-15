@@ -1,0 +1,24 @@
+{% extends "base_login.html" %}
+{% block main %}
+<h1>LOOKING FOR: {{post.title}}</h1>
+
+<div id="{{post.pid}}">
+    <h3>
+    Description: {{post.description}} <br>
+    Category: {{category.name}} <br>
+    </h3>
+</div>
+
+<h3> Comments: </h3>
+{% for comment in comments %}
+    <p> {{comment.first_name}} {{comment.last_name}} says: 
+         {{comment.commenttext}} </p>
+{% endfor %}
+<form action="" method="POST">
+    <p><label> Post a comment: <br>
+            <textarea required name= "commenttext" rows="5" cols="30"></textarea>
+    </label></p>
+    <p><input type= "submit" name= "submit" value="comment"></p>
+</form>
+
+{% endblock %}

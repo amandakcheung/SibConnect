@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Lobster&family=Montez&family=Montserrat+Alternates:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Montserrat:wght@100;400&display=swap');
 
 *{
  font-family:'Montserrat', sans-serif;
@@ -17,16 +16,26 @@
   padding-top: 5px;
 }
 
+
 /* Style the links inside the navigation bar */
 .topnav a {
   float: left;
   color: black;
   text-align: center;
-  padding: 14px 16px;
+  padding-top: 16px;
+  padding-bottom: 14px;
+  padding-left: 16px;
+  padding-right: 16px;
   text-decoration: none;
   font-size: 17px;
   border-radius: 18px;
   margin-right: 20px;
+}
+
+.topnav .sib_conn{
+  font-family: 'Lobster', cursive;
+  font-size: 26px;
+  padding-top: 10px;
 }
 
 /* Change the color of links on hover */
@@ -57,10 +66,16 @@
 /* Dropdown button */
 .dropdown .dropbtn {
   font-size: 16px;
+  padding-top: 16px;
+  padding-bottom: 14px;
+  padding-left: 16px;
+  padding-right: 16px;
+  text-decoration: none;
+  font-size: 17px;
+  border-radius: 18px;
   border: none;
   outline: none;
   color: Black;
-  padding: 14px 16px;
   background-color: inherit;
   font-family: inherit; /* Important for vertical align on mobile phones */
   margin: 0; /* Important for vertical align on mobile phones */
@@ -105,6 +120,14 @@
   margin-right: 20px;
 }
 
+.search-box form{
+  padding-top: 2px;
+}
+
+/* style for nav bar search box button*/
+.search-box form input{
+  cursor: pointer;
+}
 
 /* style for menu buttons on home page! */
 .Menu{
@@ -155,6 +178,10 @@
   box-shadow: 1px 1px 2px rgba(0,0,0,0.125);
   border: 1.5px solid #fec107;
   border-radius: 15px;
+}
+
+#seek_wrapper{
+  margin: 120px auto;
 }
 
 /* title of the form */
@@ -244,9 +271,108 @@
 
 /* end of event-form css */
 
-/* style for login form */
+/* style for profile display page */
+.profile_wrapper{
+  margin: 90px auto;
+  width: 800px;
+  display: flex;
+  box-shadow: 0 1px 20px 0 rgba(69,90,100,0.08)
+}
 
-/* the outter wrap div of the log inform */
+.profile_wrapper .left{
+  width: 35%;
+  background: #fec107;
+  padding: 30px 25px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  text-align: center;
+  color: black;
+}
+
+.profile_wrapper .left .profile_pic{
+  clip-path: circle(50%);
+  margin-bottom: 10px;
+  width: 150px;
+  height: 150px;
+  margin-left: 18%;
+}
+
+.profile_wrapper .left img{
+  object-fit: cover;
+  width: 95%;
+  height: 95%;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0px 10px 20px 0 rgba(37, 47, 51, 0.105);
+}
+
+.profile_wrapper .left h3{
+  margin-bottom: 20px;
+  font-weight: 900;
+  font-size: 20px;
+  text-align: center;
+}
+
+
+/* design for profile information div */
+.profile_wrapper .left .profile_info{
+  border: 2px solid #fde8acea;
+  border-radius: 10px;
+  margin-top: 20px;
+  width: 200px;
+  margin-left: 20px;
+  /* box-shadow: 0px 10px 20px 0 rgba(37, 47, 51, 0.105); */
+  background-color: #fde8acea;
+}
+
+/* design for profile information, text */
+.profile_wrapper .left p{
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  padding-left: 16px;
+  width: 90%;
+  text-align: left;
+}
+
+/* design for profile information, button */
+.profile_wrapper .left form{
+  margin-bottom: 20px;
+}
+
+.profile_wrapper .left form button{
+  cursor: pointer;
+}
+
+.profile_wrapper .right{
+  width: 65%;
+  background-color: #fbf1d4;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 30px 25px;
+}
+
+
+.profile_wrapper .right .user_posted,
+.profile_wrapper .right .user_interested{
+  margin-bottom:25px;
+}
+
+.profile_wrapper .right .user_posted h3,
+.profile_wrapper .right .user_interested h3{
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #747373;
+  color: black;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+
+
+/* style for login, create profile, update profile forms */
+
+/* the outter wrap div of the log in form */
 .profile_div{
   max-width: 800px;
   width:400px;
@@ -259,6 +385,7 @@
   border-radius: 15px;
 }
 
+/* id for create profile */
 #profile_id_div{
   margin: 100px auto;
   width:500px;
@@ -280,10 +407,33 @@
   margin-bottom: 50px;
 }
 
-/* input field of the form */
+
+/* the outter wrap div of the update profile */
+.profile_div{
+  max-width: 800px;
+  width:400px;
+  background-color: #fff;
+  margin: 200px auto;
+  padding: 30px;
+  padding-top: 10px;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.125);
+  border: 1.5px solid #fec107;
+  border-radius: 15px;
+}
+
+
+/* design for update profile form */
+#profile_update_div{
+  margin: 100px auto;
+  width:550px;
+}
+
+/* log in, create profile, update profile form input field */
 .profile_div #login-form .input_field .input,
 .profile_div #create-profile-form .input_field .input,
-.profile_div #create-profile-form .input_field .custom_select{
+.profile_div #create-profile-form .input_field .custom_select,
+.profile_div #update_profile_form .input_field .input,
+.profile_div #update_profile_form .input_field .custom_select{
   width: 100%;
   outline:None;
   border: 1px solid #d5dbd9;
@@ -293,18 +443,19 @@
   transition: all 0.3s ease;
 }
 
-
 /* each section (row) of the log in form */
 #login-form .input_field,
-#create-profile-form .input_field{
+#create-profile-form .input_field,
+#update_profile_form .input_field{
   margin-bottom: 30px;
   display: flex;
   align-items: center;
 }
 
-/* log in form input field label */
+/* log in, create profile, update profile form input field label */
 #login-form .input_field label,
-#create-profile-form .input_field label{
+#create-profile-form .input_field label,
+#update_profile_form .input_field label{
   width: 200px;
   color: black;
   margin-right: 10px;
@@ -312,10 +463,10 @@
   font-weight: 400;
 }
 
-
-/* login form subumit button */
+/* log in, create profile, update profile form form subumit button */
 #login-form .input_field .profile_btn,
-#create-profile-form .input_field .profile_btn{
+#create-profile-form .input_field .profile_btn,
+#update_profile_form .input_field .profile_btn{
   width: 100%;
   padding: 8px 10px;
   font-size: 15px;
@@ -328,23 +479,38 @@
 
 /* event form subumit button hover state */
 #login-form .input_field .login_btn:hover,
-#create-profile-form .input_field .profile_btn:hover{
+#create-profile-form .input_field .profile_btn:hover,
+#update_profile_form .input_field .profile_btn:hover{
   background-color: white;
   color: orangered;
   border: 1.5px solid #fec107;
   transition: 0.3s;
 }
 
-/* style for create profile form */
 
-/* #create-profile-form{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  color: black;
-  box-shadow: 1px 1px 2px rgba(0,0,0,0.125);
-  border: 1.5px solid #fec107;
-  border-radius: 15px;
-  width: 400px;
-} */
+.profile_div #update_profile_form .profile_pic{
+  clip-path: circle(50%);
+  margin-bottom: 20px;
+  width: 200px;
+  height: 200px;
+  margin-left: 32%;
+}
+
+.profile_div #update_profile_form .profile_pic img{
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+/* for upload image description */
+#update_profile_form .image_upload{
+  text-align: center;
+  margin-bottom: 50px;
+  font-size: 15px;
+}
+
+#update_profile_form .image_upload input{
+  margin-top: 8px;
+  margin-left: 20%;
+}

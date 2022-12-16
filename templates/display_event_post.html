@@ -4,7 +4,9 @@
 
 <form action="{{url_for('display_post',pid=post.pid)}}" method="POST">
     <button type="submit" name="submit" value={{interested}}>{{interested}}</button>
+    <h3>number of interests: {{num_interested}}</h3>
 </form>
+
 
 <div id="{{post.pid}}">
     <h3>

@@ -113,7 +113,6 @@ def login():
         print('rehash is: {} {}'.format(hashed2_str,type(hashed2_str)))
         if hashed2_str == stored:
             print('they match!')
-            flash('Welcome '+ first + '!')
             session['email'] = email
             session['first_name'] = first
             session['uid'] = row['uid']
@@ -171,9 +170,14 @@ def seeking():
         #returns to the detailed post that's posted
         else:
             category = sibconn.get_category(conn,category)
-            cid = category.get('cid')
-            sibconn.new_seeking(cid, desc, title, conn,uid)
+            cid = category['cid']
+            print("debug for cid")
+            print(cid)
+            sibconn.new_seeking(cid, desc, title, conn, uid)
             pid = sibconn.get_last_pid(conn)
+            pid = pid.get('last_insert_id()')
+            print("debug for pid")
+            print(pid)
             return redirect(url_for('display_post', pid=pid))
 
 @app.route('/event/', methods=["GET", "POST"])
@@ -260,10 +264,18 @@ def display_post(pid):
     conn = dbi.connect()
     uid = session.get('uid')
     if request.method == "GET":
+        print('debug, print pid')
+        print(pid)
         full_post = sibconn.get_specific_post(conn, pid)
+        print("debug-display post,full_post")
+        print(full_post)
         cid = full_post.get('category')
         category = sibconn.get_category_name(conn,cid)
-        comments= sibconn.grab_comments(conn,pid)
+        comments = sibconn.grab_comments(conn,pid)
+        count = sibconn.count_interested(conn,pid)
+        num_interested = count.get('count(*)')
+        print('debug for num_interested')
+        print(num_interested)
         if sibconn.check_interested(conn,uid,pid):
             print('pressed intersted uid', uid)
             interested='uninterested'
@@ -272,7 +284,7 @@ def display_post(pid):
             interested="interested"
         if full_post.get('type') == 'event_post':
             return render_template('display_event_post.html', 
-            post= full_post, comments=comments,category= category, interested=interested)
+            post= full_post, comments=comments,category= category,interested=interested,num_interested=num_interested)
         else:
             return render_template('display_seeking_post.html', 
             post= full_post, comments=comments,category= category, interested=interested)
@@ -325,6 +337,7 @@ def display_user():
 def search():
     '''allows users to search the website'''
     conn = dbi.connect()
+    uid = session.get('uid','')
     if request.method == 'GET':
         phrase = request.args['search a post']
         post_pids = sibconn.search_post(conn,phrase)
@@ -332,7 +345,10 @@ def search():
         for pid in post_pids:
             pid = pid.get('pid')
             all_posts.append(sibconn.get_specific_post(conn,pid))
-        return render_template('search.html',phrase = phrase, all_posts = all_posts)
+        if uid == '':
+            return render_template('search.html',phrase = phrase, all_posts = all_posts)
+        else:
+            return render_template('search_login.html',phrase = phrase, all_posts = all_posts)
 
 @app.route('/user/update/',methods=["GET","POST"])
 def update_profile():
@@ -354,9 +370,11 @@ def update_profile():
         src = sibconn.upload(conn,request)
         return redirect(url_for("display_user"))
 
-@app.route('/pic/<uid>/')
-def pic(conn,uid):
+@app.route('/pic/')
+def pic():
     '''Selects the profile picture '''
+    conn = dbi.connect()
+    uid = session.get('uid')
     curs = dbi.dict_cursor(conn)
     numrows = curs.execute(
         '''select filename from picfile where uid = %s''',

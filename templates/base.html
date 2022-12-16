@@ -14,19 +14,21 @@
 {% block nav %}
 <div class = "topnav">
       <!--<a class="active" href="{{url_for('home')}}">Home</a> -->
-      <a href="{{url_for('home')}}">SibConnect</a>
+      <a class="sib_conn" href="{{url_for('home')}}">SibConnect</a>
+      
       <div class="search-box">
         <form action= "{{url_for('search')}}" method='get'>
-          <label>search<input type= "text" name="search a post" size="30" 
+          <label><input type= "text" name="search a post" size="30" 
             maxlength="60" placeholder="Search posts" required></label>
           <input class = search_btn type= 'submit' value= 'Submit'>
         </form>
       </div>
-      <div class="topnav-right">
+
+      <!-- <div class="topnav-right"> -->
         <!-- flex not working for some reason -->
-        <a href="{{url_for('create_profile')}}">Create Profile</a>
-        <a href="{{url_for('login')}}">Log In</a>
-      </div>
+      <a href="{{url_for('create_profile')}}">Create Profile</a>
+      <a href="{{url_for('login')}}">Log In</a>
+      <!-- </div> -->
 </div>
 {% endblock %}
 
@@ -44,3 +46,6 @@
 {% block main %}
 {% endblock %}
 </main>
+
+
+<!-- js for activate nav bar on click -->

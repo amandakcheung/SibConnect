@@ -1,14 +1,75 @@
 {% extends "base_login.html" %}
 {% block main %}
-<h1>Update your profile</h1>
-<p class="intro"> <em>Please update your profile information in the form below</em></p>
 
-<form id="Update profile here"
+<div class="profile_div" id="profile_update_div">
+  <p class="title">Update profile</p>
+  <p class="intro"> <em>Please update your profile information in the form below</em></p>
+
+  <form id="update_profile_form"
     method="POST"
     action="{{url_for('update_profile')}}"
     enctype="multipart/form-data">
+
+    <div class="profile_pic">
+      {% if uid != '' and src != '' %}
+      <img src="{{src}}" alt ='Profile pic' width="100">
+      {% endif %}
+    </div>
     
-<p><label>Email:
+    <div class = "image_upload">
+      <label for="update_profile-pic">Upload new picture: <br>
+      <input id="update_profile-pic" type="file" name="pic" value="update profile picture"></label>
+    </div>
+
+    <div class = "input_field">
+      <label for="update_profile_email">Email: </label>
+      <input required class=input id="update_profile_email" name="email" rows="1" cols="50" value="{{user.email}}"></input>
+    </div>
+
+    <div class = "input_field">
+      <label for="update_profile_first">First name: </label>
+      <input required class=input id="update_profile_first" name="first_name" rows="1" cols="50" value="{{user.first_name}}"></input>
+    </div>
+
+    <div class = "input_field">
+      <label for="update_profile_last">Last name: </label>
+      <input required class=input id="update_profile_last" name="last_name" rows="1" cols="50" value="{{user.last_name}}"></input>
+    </div>
+
+    <div class = "input_field">
+      <label for="update_profile_pronouns">Pronouns : </label>
+      <input required class=input id="update_profile_prnouns" name="pronouns" rows="1" cols="50" value="{{user.pronouns}}"></input>
+    </div>
+
+    <div class = "input_field">
+      <label for="update_profile_interests">Interests: </label>
+      <input required class=input id="update_profile_pronouns" name="interests" rows="1" cols="50" value="{{user.interests}}"></input>
+    </div>
+
+    <div class = "input_field">
+      <label for="update_profile_dorm">Dorm: </label>
+      <input class=input id="update_profile_dorm" name="dorm" rows="1" cols="50" value={{user.dorm}}></input>
+    </div>   
+  
+    <div class = "input_field">
+      <label>Class Year: </label>
+      <select required class ="custom_select" name="class_year">
+          <option value={{user.class_year}}>{{user.class_year}}</option>
+          <option value="2026">2026</option>
+          <option valur="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">Alum</option>
+      </select>
+    </div>
+
+    <div class ="input_field">
+      <input class = profile_btn type="submit" value="Update Profile">
+    </div>
+
+    </form>
+    
+<!-- <p><label>Email:
   <input name="email" rows="1" cols="50" value={{user.email}}></input>
 </label></p>
 
@@ -28,26 +89,11 @@
 
 <p><label>Dorm:
   <input required name="dorm" rows="1" cols="50" value={{user.dorm}}></input>
-</label></p>
+</label></p> -->
 
-<p><label>Class Year:
-    <select required name="class_year">
-        <option value={{user.class_year}}>choose</option>
-        <option value="2026">2026</option>
-        <option valur="2025">2025</option>
-        <option value="2024">2024</option>
-        <option value="2023">2023</option>
-        <option value="2022">Alum</option>
-    </select>
-</label></p>
 
-<p><label>Pic: <input type="file" name="pic"></label></p>
 
-<p><input type="submit" value="Update Profile">
 
-</form>
-{% if uid != '' and src != '' %}
-<p>Last upload: {{uid}}</p>
-<p> <img src="{{src}}"></p>
-{% endif %}
+
+
 {% endblock %}

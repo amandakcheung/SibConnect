@@ -180,7 +180,6 @@ def update_profile(conn,uid, user):
                       uid])
     conn.commit()
 
-
 def upload(conn, request):
     ''' Uploads a profile photo'''
     try:
@@ -213,6 +212,14 @@ def add_interested(conn, uid,pid):
     values (%s, %s)'''
     curs.execute(sql,[uid,pid])
     conn.commit()
+
+
+def count_interested(conn,pid):
+    ''' counts how many likes the post receives'''
+    curs = dbi.dict_cursor(conn)
+    sql = ''' select count(*) from interested where pid=%s'''
+    curs.execute(sql,[pid])
+    return curs.fetchone()
 
 def check_interested(conn,uid,pid):
     '''checks if the user and pid are already in the

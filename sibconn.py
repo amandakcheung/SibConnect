@@ -23,10 +23,15 @@ def create_profile(conn, email, first, last, hashed, pronouns, class_year, inter
         conn.commit()
     except Exception as err:
         print('something went wrong', repr(err))
+    sql = '''select last_insert_id()'''
+    curs.execute(sql)
+    return curs.fetchone()
 
 def login(conn, email):
     '''
-    This methods checks user email and password and log them in
+    This method selects the log in information for a user and fetches it 
+    from the database
+    based on an email
     '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''SELECT uid,hashed,first_name
@@ -45,6 +50,10 @@ def new_seeking(category, description, title, conn,uid):
     values (%s, %s, %s, 'seeking_post', %s, %s);'''
     curs.execute(sql, [None, uid, title, category, description])
     conn.commit()
+    sql = '''select last_insert_id()'''
+    curs.execute(sql)
+    pid = curs.fetchone()
+    return pid.get('last_insert_id()')
 
 def new_event(category, title, desc, location, date, length, recurring, capacity, skill, conn, uid):
     '''
@@ -60,6 +69,10 @@ def new_event(category, title, desc, location, date, length, recurring, capacity
     curs.execute(sql, [None, uid, title, category, 
     location, date, length, recurring, capacity, skill, desc])
     conn.commit()
+    sql = '''select last_insert_id()'''
+    curs.execute(sql)
+    pid = curs.fetchone()
+    return pid.get('last_insert_id()')
 
 def get_categories(conn):
     '''This method selects all the categories 
@@ -70,7 +83,8 @@ def get_categories(conn):
     return curs.fetchall()
 
 def get_posts(conn, category):
-    ''' This method gets all of the posts within a category'''
+    ''' This method gets all of the posts within a category
+    Returns every column for every post in a category'''
     curs = dbi.dict_cursor(conn)
     sql = '''select * from post where category = 
     (select cid from category where name = %s)'''
@@ -78,7 +92,9 @@ def get_posts(conn, category):
     return curs.fetchall()
 
 def get_specific_post(conn, pid):
-    '''This method gets the details for a specific post'''
+    '''This method gets the details for a specific post
+    Returns all posts with its title, description, 
+    pid, location, recurrence, skill level'''
     curs = dbi.dict_cursor(conn)
     sql = '''select * from post where pid= %s'''
     curs.execute(sql,[pid])
@@ -104,16 +120,6 @@ def get_last_pid(conn):
     sql = '''select last_insert_id()'''
     curs.execute(sql)
     return curs.fetchone()
-
-def sort_recent_post(conn, category, ptype,sorto):
-    '''This method sorts event posts from earliest to 
-    latest or latest to earliest'''
-    curs = dbi.dict_cursor(conn)
-    sql = '''select * from post where category = (select cid from category where name = %s) and 
-    type = %s
-    order by %s'''
-    curs.execute(sql, [category, ptype, sorto])
-    return curs.fetchall()
 
 def find_user_posts(conn,uid):
     '''This method finds all posts that the user
@@ -155,14 +161,6 @@ def search_post(conn, phrase):
     curs.execute(sql, ['%' + phrase + '%', '%' + phrase + '%'])
     info = curs.fetchall()
     return info
-
-def get_last_uid(conn):
-    ''' Gets the last inserted uid'''
-    curs = dbi.dict_cursor(conn)
-    sql = '''select last_insert_id()'''
-    curs.execute(sql)
-    row = curs.fetchone()
-    return row[0]
 
 def update_profile(conn,uid, user):
     '''Updates the Profile with New Information '''
@@ -253,7 +251,7 @@ def grab_comments(conn,pid):
     curs.execute(sql,[pid])
     return curs.fetchall()
 
-def sort_by_dorm(conn,dorm, category):
+def filter_by_dorm(conn,dorm, category):
     '''Displays all the events happening in a dorm'''
     curs = dbi.dict_cursor(conn)
     sql = '''select pid, uid, type, title, category, location, 
@@ -263,7 +261,7 @@ def sort_by_dorm(conn,dorm, category):
     curs.execute(sql,[dorm,category])
     return curs.fetchall()
 
-def sort_by_recurring(conn,num, category):
+def filter_by_recurring(conn,num, category):
     '''Displays either recurring or not'''
     curs = dbi.dict_cursor(conn)
     sql = '''select pid, uid, type, title, category, location,
@@ -283,7 +281,7 @@ def get_all_posts(conn):
     curs.execute(sql)
     return curs.fetchall()
 
-def sort_by_type(conn, sort):
+def filter_by_type(conn, sort):
     '''sorts the posts by seeking or event post'''
     curs = dbi.dict_cursor(conn)
     sql = '''select pid, uid, type, title, category, location,

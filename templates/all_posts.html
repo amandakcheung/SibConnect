@@ -2,14 +2,15 @@
 {% block main %}
 <h1>All Posts</h1>
 
-<form action="#" method="POST">
+<form method="POST">
     <label> Filter by Event Type:</label>
     <select onChange="window.location.href=this.value"> 
     <option value="value" selected>Filter By</option>
     <option value="{{url_for('all_posts', sort='event_post')}}">Event Posts</option>
     <option value="{{url_for('all_posts', sort='seeking_post')}}" >Seeking Posts</option>
     </select>
-    </form>
+</form>
+
 
 
 <div id="posts">

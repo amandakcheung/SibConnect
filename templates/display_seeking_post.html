@@ -2,19 +2,20 @@
 {% block main %}
 <h1>LOOKING FOR: {{post.title}}</h1>
 
-<div id="{{post.pid}}">
-    <h3>
-    Description: {{post.description}} <br>
-    Category: {{category.name}} <br>
-    </h3>
+<div id="post_pid">
+    <ul class="list">
+        <li><strong> Description:</strong> {{post.description}}</li>
+        <li><strong> Category:</strong> {{category.name}}</li>
+    </ul>
 </div>
-
+<div id="comments">
 <h3> Comments: </h3>
 {% for comment in comments %}
     <p> {{comment.first_name}} {{comment.last_name}} says: 
          {{comment.commenttext}} </p>
+</div>
 {% endfor %}
-<form action="" method="POST">
+<form method="POST">
     <p><label> Post a comment: <br>
             <textarea required name= "commenttext" rows="5" cols="30"></textarea>
     </label></p>

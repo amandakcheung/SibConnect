@@ -173,10 +173,7 @@ def seeking():
             cid = category['cid']
             print("debug for cid")
             print(cid)
-            sibconn.new_seeking(cid, desc, title, conn, uid)
-            pid = sibconn.get_last_pid(conn)
-            pid = pid.get('last_insert_id()')
-            print("debug for pid")
+            pid = sibconn.new_seeking(cid, desc, title, conn, uid)
             print(pid)
             return redirect(url_for('display_post', pid=pid))
 
@@ -217,46 +214,29 @@ def event():
             print("succeessfully recorded the entry")
             cid_dict = sibconn.get_category(conn,category)
             cid = cid_dict.get('cid')
-            sibconn.new_event(
+            pid = sibconn.new_event(
                 cid, title, desc, location, date, length,
                 recurring, capacity, skill, conn, uid)
-            pid = sibconn.get_last_pid(conn)
-            pid = pid.get('last_insert_id()')
+            print(pid)
             return redirect(url_for('display_post', pid=pid))
 
 @app.route('/<category>/<sort>',methods= ['GET','POST'])
 def category(category, sort):
     ''' This methods displays the category's posts'''
     conn = dbi.connect()
-    if request.method == "GET":
-        if sort == 'leastrecent':
-            all_posts = sibconn.sort_recent_post(conn, category, 
-            'event_post', 'pid, asc')
-        elif sort == "mostrecent":
-            all_posts = sibconn.sort_recent_post(conn, category, 
-            'event_post', 'pid, desc')
-        elif sort == "lowskill":
-            all_posts = sibconn.sort_recent_post(conn, category, 
-            'event_post', 'skill, asc')
-        elif sort == "highskill":
-            all_posts = sibconn.sort_recent_post(conn, category, 
-            'event_post', 'skill, desc')
-        elif sort == "recurring": #recurring is being weird
-            all_posts = sibconn.sort_recent_post(conn, category, 
-            'event_post', 'recurring, asc')
-        elif sort == 'West Side':
-            all_posts = sibconn.sort_by_dorm(conn,'Quint/ West Side',category)
-        elif sort == 'Tower Court' or sort == \
-                        'Stone Davis' or sort == 'New Dorms' or sort == \
-                        'Branch (Lake House etc)':
-            all_posts = sibconn.sort_by_dorm(conn,sort,category)
-        elif sort == '1' or '0':
-            all_posts = sibconn.sort_by_recurring(conn, sort, category)      
-        else:
-            all_posts = sibconn.get_posts(conn,category)
-        print(all_posts)
-        return render_template('posts.html', category=category, 
-        all_posts=all_posts)
+    if sort == 'West Side':
+        all_posts = sibconn.filter_by_dorm(conn,'Quint/ West Side',category)
+    elif sort == 'Tower Court' or sort == \
+                    'Stone Davis' or sort == 'New Dorms' or sort == \
+                    'Branch (Lake House etc)':
+        all_posts = sibconn.filter_by_dorm(conn,sort,category)
+    elif sort == '1' or '0':
+        all_posts = sibconn.filter_by_recurring(conn, sort, category)      
+    else:
+        all_posts = sibconn.get_posts(conn,category)
+    print(all_posts)
+    return render_template('posts.html', category=category, 
+    all_posts=all_posts)
 
 @app.route('/post/<pid>/', methods= ['GET','POST'])
 def display_post(pid):
@@ -395,7 +375,7 @@ def all_posts(sort):
             all_posts = sibconn.get_all_posts(conn)
             return render_template('all_posts.html', category = 'all', all_posts=all_posts)
         else:
-            all_posts = sibconn.sort_by_type(conn, sort)
+            all_posts = sibconn.filter_by_type(conn, sort)
             return render_template('all_posts.html', category=category, 
             all_posts=all_posts) 
 

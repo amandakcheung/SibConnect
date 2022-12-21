@@ -8,24 +8,27 @@
 </form>
 
 
-<div id="{{post.pid}}">
-    <h3>
-    Description: {{post.description}}<br>
-    Location: {{post.location}} <br>
-    Category: {{category.name}} <br>
-    When: {{post.date_time}} <br>
-    Length: {{post.length}} minutes<br>
-    Recurring? {{post.recurring}} <br>
-    Capacity Limit: {{post.capacity}} <br>
-    Skill Level: {{post.skill}}
-    </h3>
+<div id="post_pid">
+    <ul class="list">
+        <li><strong> Description:</strong> {{post.description}}</li>
+        <li><strong>Location:</strong> {{post.location}}</li>
+        <li><strong> Category:</strong> {{category.name}}</li>
+        <li><strong> When:</strong> {{post.date_time}}</li>
+        <li><strong> Length:</strong> {{post.length}} minutes</li>
+        <li><strong>Recurring:</strong> {{post.recurring}}</li> 
+        <li><strong>Capacity Limit:</strong> {{post.capacity}}</li> 
+        <li><strong>Skill Level:</strong> {{post.skill}}</li>
+    </ul>
 </div>
+
+<div id="comments">
 <h3> Comments: </h3>
 {% for comment in comments %}
     <p> {{comment.first_name}} {{comment.last_name}} says: 
          {{comment.commenttext}} </p>
+</div>
 {% endfor %}
-<form action="" method="POST">
+<form method="POST">
     <p><label> Post a comment: <br>
             <textarea required name= "commenttext" rows="5" cols="30"></textarea>
     </label></p>

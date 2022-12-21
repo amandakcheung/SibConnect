@@ -290,6 +290,24 @@ def filter_by_type(conn, sort):
     curs.execute(sql,[sort])
     return curs.fetchall()
 
+def delete_post(conn,pid):
+    '''deletes the post that a user created'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''delete from comment where pid = %s'''
+    curs.execute(sql, [pid])
+    conn.commit()
+    sql2 = '''delete from post where pid = %s'''
+    curs.execute(sql2, [pid])
+    conn.commit()
+
+def find_user_who_posted(conn,pid):
+    '''finds the user who posted the post'''
+    curs = dbi.dict_cursor(conn)
+    sql = '''select first_name, last_name from user where
+    uid = (select uid from post where pid=%s)'''
+    curs.execute(sql,[pid])
+    return curs.fetchone()
+
 if __name__ == '__main__':
     dbi.cache_cnf()   # defaults to ~/.my.cnf
     dbi.use('sibconn_db')

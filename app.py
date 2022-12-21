@@ -262,12 +262,20 @@ def display_post(pid):
         else:
             print('need to press interested uid', uid)
             interested="interested"
+        print(pid)
+        name= sibconn.find_user_who_posted(conn,pid)
+        print('name',name)
+        first_name = name.get('first_name')
+        print(first_name)
+        last_name = name.get('last_name')
         if full_post.get('type') == 'event_post':
             return render_template('display_event_post.html', 
-            post= full_post, comments=comments,category= category,interested=interested,num_interested=num_interested)
+            post= full_post, comments=comments,category= category,interested=interested,num_interested=num_interested, 
+            first_name = first_name, last_name=last_name)
         else:
             return render_template('display_seeking_post.html', 
-            post= full_post, comments=comments,category= category, interested=interested)
+            post= full_post, comments=comments,category= category, interested=interested,
+            first_name = first_name, last_name=last_name)
     if request.method == "POST":
         if not uid:
             flash('you need to log in!')
@@ -361,7 +369,7 @@ def pic():
         [uid])
     if numrows == 0:
         flash('No picture for {}'.format(uid))
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
     row = curs.fetchone()
     return send_from_directory(app.config['UPLOADS'],row['filename'])
 
@@ -379,6 +387,13 @@ def all_posts(sort):
             return render_template('all_posts.html', category=category, 
             all_posts=all_posts) 
 
+@app.route('/delete_post/<pid>',methods=['POST'])
+def delete_curr_post(pid):
+    conn = dbi.connect()
+    print('delete',pid)
+    if request.method == 'POST':
+        sibconn.delete_post(conn,pid)
+        return redirect(url_for('display_user'))
 
 #use to make the database run
 @app.before_first_request

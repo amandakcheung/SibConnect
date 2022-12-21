@@ -1,8 +1,8 @@
 {% extends "base_login.html" %}
 {% block main %}
-<h1>EVENT: {{post.title}}</h1>
+<h1 class="h1">EVENT: {{post.title}}</h1>
 
-<form action="{{url_for('display_post',pid=post.pid)}}" method="POST">
+<form class= post_form action="{{url_for('display_post',pid=post.pid)}}" method="POST">
     <button type="submit" name="submit" value={{interested}}>{{interested}}</button>
     <h3>number of interests: {{num_interested}}</h3>
 </form>
@@ -21,14 +21,16 @@
     </ul>
 </div>
 
-<div id="comments">
-<h3> Comments: </h3>
-{% for comment in comments %}
-    <p> {{comment.first_name}} {{comment.last_name}} says: 
-         {{comment.commenttext}} </p>
+<div class="comments">
+    <h3> Comments: </h3>
+    {% for comment in comments %}
+        <p> {{comment.first_name}} {{comment.last_name}} says: 
+            {{comment.commenttext}} 
+        </p>
+    {% endfor %}
 </div>
-{% endfor %}
-<form method="POST">
+
+<form class= comment_form method="POST">
     <p><label> Post a comment: <br>
             <textarea required name= "commenttext" rows="5" cols="30"></textarea>
     </label></p>

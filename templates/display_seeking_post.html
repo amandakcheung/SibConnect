@@ -1,6 +1,6 @@
 {% extends "base_login.html" %}
 {% block main %}
-<h1>LOOKING FOR: {{post.title}}</h1>
+<h1 class="h1">LOOKING FOR: {{post.title}}</h1>
 
 <div id="post_pid">
     <ul class="list">
@@ -8,14 +8,17 @@
         <li><strong> Category:</strong> {{category.name}}</li>
     </ul>
 </div>
-<div id="comments">
-<h3> Comments: </h3>
-{% for comment in comments %}
-    <p> {{comment.first_name}} {{comment.last_name}} says: 
-         {{comment.commenttext}} </p>
+
+<div class="comments">
+    <h3> Comments: </h3>
+    {% for comment in comments %}
+        <p> {{comment.first_name}} {{comment.last_name}} says: 
+            {{comment.commenttext}} 
+        </p>
+    {% endfor %}
 </div>
-{% endfor %}
-<form method="POST">
+
+<form class= comment_form method="POST">
     <p><label> Post a comment: <br>
             <textarea required name= "commenttext" rows="5" cols="30"></textarea>
     </label></p>

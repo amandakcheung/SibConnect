@@ -1,27 +1,29 @@
 {% extends "base.html" %}
 {% block main %}
-<h1>Posts for {{category}}</h1>
+<h1 class="h1">Posts for {{category}}</h1>
 
-<form method="POST">
-    <label> Filter by Dorm:</label>
-    <select onChange="window.location.href=this.value"> 
-    <option value="value" selected>Filter By</option>
-    <option value="{{url_for('category', category=category, sort='West Side')}}">Quint/West Side</option>
-    <option value="{{url_for('category', category=category, sort='Tower Court')}}" >Tower Court</option>
-    <option value="{{url_for('category', category=category, sort='New Dorms')}}" >New Dorms</option>
-    <option value="{{url_for('category', category=category, sort='Stone Davis')}}">Stone Davis</option>
-    <option value="{{url_for('category', category=category, sort='Branch (Lake House etc)')}}">Branch (Lake House etc)/option>
-    </select>
-    </form>
+<div class="post_category_div">
+    <form class= post_category method="POST">
+        <label> Filter by Dorm:</label>
+        <select onChange="window.location.href=this.value"> 
+        <option value="value" selected>Filter By</option>
+        <option value="{{url_for('category', category=category, sort='West Side')}}">Quint/West Side</option>
+        <option value="{{url_for('category', category=category, sort='Tower Court')}}" >Tower Court</option>
+        <option value="{{url_for('category', category=category, sort='New Dorms')}}" >New Dorms</option>
+        <option value="{{url_for('category', category=category, sort='Stone Davis')}}">Stone Davis</option>
+        <option value="{{url_for('category', category=category, sort='Branch (Lake House etc)')}}">Branch (Lake House etc)/option>
+        </select>
+        </form>
 
-<form method="POST">
-    <label> Filter by Recurring:</label>
-    <select onChange="window.location.href=this.value"> 
-    <option value="value" selected>Filter By</option>
-    <option value="{{url_for('category', category=category, sort='1')}}">Recurring</option>
-    <option value="{{url_for('category', category=category, sort='0')}}" >Not Recurring</option>
-    </select>
-    </form>
+    <form class= post_category method="POST">
+        <label> Filter by Recurring:</label>
+        <select onChange="window.location.href=this.value"> 
+        <option value="value" selected>Filter By</option>
+        <option value="{{url_for('category', category=category, sort='1')}}">Recurring</option>
+        <option value="{{url_for('category', category=category, sort='0')}}" >Not Recurring</option>
+        </select>
+        </form>
+</div>
 
 <div id="posts">
     {% for post in all_posts %}
